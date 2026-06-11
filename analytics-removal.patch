@@ -1,0 +1,4258 @@
+From 0367c213d70ae67f427c62ed974c8650716db318 Mon Sep 17 00:00:00 2001
+From: Quentin Valmori <quentin.valmori@gmail.com>
+Date: Wed, 10 Jun 2026 15:25:48 +0200
+Subject: [PATCH] [all] removed Analytic module sources (cherry-pick 48dcc5c)
+
+---
+ apps/common/Analytics.js                      | 88 -------------------
+ apps/documenteditor/embed/index.html          |  1 -
+ apps/documenteditor/embed/index_loader.html   |  1 -
+ apps/documenteditor/forms/app.js              |  7 --
+ .../app/controller/ApplicationController.js   | 12 ---
+ apps/documenteditor/forms/app_dev.js          |  7 --
+ apps/documenteditor/main/app.js               |  7 --
+ .../main/app/controller/DocumentHolderExt.js  |  9 --
+ .../main/app/controller/HeaderFooterTab.js    |  3 -
+ .../main/app/controller/LeftMenu.js           |  2 -
+ .../main/app/controller/Links.js              |  2 -
+ .../main/app/controller/Main.js               | 11 ---
+ .../main/app/controller/PageLayout.js         |  4 -
+ .../main/app/controller/Toolbar.js            | 80 +----------------
+ apps/documenteditor/main/app_dev.js           |  7 --
+ .../mobile/src/controller/Error.jsx           |  2 -
+ .../mobile/src/controller/Main.jsx            |  3 -
+ .../mobile/src/store/appOptions.js            |  2 -
+ apps/documenteditor/mobile/src/view/app.jsx   |  2 -
+ apps/pdfeditor/main/app.js                    |  7 --
+ .../main/app/controller/DocumentHolderExt.js  | 27 ------
+ apps/pdfeditor/main/app/controller/InsTab.js  | 13 ---
+ .../pdfeditor/main/app/controller/LeftMenu.js |  2 -
+ apps/pdfeditor/main/app/controller/Main.js    | 11 ---
+ apps/pdfeditor/main/app/controller/Toolbar.js | 44 ----------
+ apps/pdfeditor/main/app_dev.js                |  7 --
+ apps/presentationeditor/embed/index.html      |  1 -
+ .../embed/index_loader.html                   |  1 -
+ apps/presentationeditor/main/app.js           |  7 --
+ .../main/app/controller/DocumentHolderExt.js  | 35 --------
+ .../main/app/controller/LeftMenu.js           |  2 -
+ .../main/app/controller/Main.js               | 11 ---
+ .../main/app/controller/SlideMasterTab.js     |  1 -
+ .../main/app/controller/Toolbar.js            | 61 +------------
+ .../main/app/controller/Viewport.js           |  1 -
+ apps/presentationeditor/main/app_dev.js       |  7 --
+ .../mobile/src/controller/Error.jsx           |  2 -
+ .../mobile/src/controller/Main.jsx            |  3 -
+ .../mobile/src/page/app.jsx                   |  2 -
+ .../mobile/src/store/appOptions.js            |  2 -
+ apps/spreadsheeteditor/embed/index.html       |  1 -
+ .../spreadsheeteditor/embed/index_loader.html |  1 -
+ apps/spreadsheeteditor/main/app.js            |  7 --
+ .../main/app/controller/DocumentHolderExt.js  | 35 +-------
+ .../main/app/controller/LeftMenu.js           |  2 -
+ .../main/app/controller/Main.js               | 10 ---
+ .../main/app/controller/Print.js              |  2 -
+ .../main/app/controller/Toolbar.js            | 79 +----------------
+ apps/spreadsheeteditor/main/app_dev.js        |  7 --
+ .../mobile/src/controller/Error.jsx           |  2 -
+ .../mobile/src/controller/Main.jsx            |  7 --
+ .../spreadsheeteditor/mobile/src/page/app.jsx |  2 -
+ .../mobile/src/store/appOptions.js            |  2 -
+ apps/visioeditor/embed/index.html             |  1 -
+ apps/visioeditor/embed/index_loader.html      |  1 -
+ .../embed/js/ApplicationController.js         | 10 ---
+ apps/visioeditor/main/app.js                  |  7 --
+ .../main/app/controller/LeftMenu.js           |  2 -
+ apps/visioeditor/main/app/controller/Main.js  | 11 ---
+ .../main/app/controller/Toolbar.js            |  2 -
+ apps/visioeditor/main/app_dev.js              |  7 --
+ .../mobile/src/controller/Error.jsx           |  2 -
+ .../mobile/src/controller/Main.jsx            |  3 -
+ apps/visioeditor/mobile/src/page/app.jsx      |  2 -
+ .../mobile/src/store/appOptions.js            |  2 -
+ 65 files changed, 4 insertions(+), 700 deletions(-)
+ delete mode 100644 apps/common/Analytics.js
+
+diff --git a/apps/common/Analytics.js b/apps/common/Analytics.js
+deleted file mode 100644
+index 8d8bd041..00000000
+--- a/apps/common/Analytics.js
++++ /dev/null
+@@ -1,88 +0,0 @@
+-/*
+- * Copyright (C) Ascensio System SIA, 2009-2026
+- *
+- * This program is a free software product. You can redistribute it and/or
+- * modify it under the terms of the GNU Affero General Public License (AGPL)
+- * version 3 as published by the Free Software Foundation, together with the
+- * additional terms provided in the LICENSE file.
+- *
+- * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+- * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+- *
+- * You can contact Ascensio System SIA by email at info@onlyoffice.com
+- * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+- * LV-1050, Latvia, European Union.
+- *
+- * The interactive user interfaces in modified versions of the Program
+- * are required to display Appropriate Legal Notices in accordance with
+- * Section 5 of the GNU AGPL version 3.
+- *
+- * No trademark rights are granted under this License.
+- *
+- * All non-code elements of the Product, including illustrations,
+- * icon sets, and technical writing content, are licensed under the
+- * Creative Commons Attribution-ShareAlike 4.0 International License:
+- * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+- *
+- * This license applies only to such non-code elements and does not
+- * modify or replace the licensing terms applicable to the Program's
+- * source code, which remains licensed under the GNU Affero General
+- * Public License v3.
+- *
+- * SPDX-License-Identifier: AGPL-3.0-only
+- */
+-if (window.Common === undefined)
+-    window.Common = {};
+-
+-Common.component = Common.component || {};
+-
+-    Common.Analytics = Common.component.Analytics = new(function() {
+-        var _category;
+-
+-        return {
+-            initialize: function(id, category) {
+-
+-                if (typeof id === 'undefined')
+-                    throw 'Analytics: invalid id.';
+-
+-                if (typeof category === 'undefined' || Object.prototype.toString.apply(category) !== '[object String]')
+-                    throw 'Analytics: invalid category type.';
+-
+-                _category = category;
+-
+-                $('head').append(
+-                    '<script type="text/javascript">' +
+-                    'var _gaq = _gaq || [];' +
+-                    '_gaq.push(["_setAccount", "' + id + '"]);' +
+-                    '_gaq.push(["_trackPageview"]);' +
+-                    '(function() {' +
+-                    'var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;' +
+-                    'ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";' +
+-                    'var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);' +
+-                    '})();' +
+-                    '</script>'
+-                );
+-            },
+-
+-            trackEvent: function(action, label, value) {
+-
+-                if (typeof action !== 'undefined' && Object.prototype.toString.apply(action) !== '[object String]')
+-                    throw 'Analytics: invalid action type.';
+-
+-                if (typeof label !== 'undefined' && Object.prototype.toString.apply(label) !== '[object String]')
+-                    throw 'Analytics: invalid label type.';
+-
+-                if (typeof value !== 'undefined' && !(Object.prototype.toString.apply(value) === '[object Number]' && isFinite(value)))
+-                    throw 'Analytics: invalid value type.';
+-
+-                if (typeof _gaq === 'undefined')
+-                    return;
+-
+-                if (_category === 'undefined')
+-                    throw 'Analytics is not initialized.';
+-
+-                _gaq.push(['_trackEvent', _category, action, label, value]);
+-            }
+-        }
+-    })();
+diff --git a/apps/documenteditor/embed/index.html b/apps/documenteditor/embed/index.html
+index cc6b2690..73ed147e 100644
+--- a/apps/documenteditor/embed/index.html
++++ b/apps/documenteditor/embed/index.html
+@@ -251,7 +251,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/dropdown.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/modal.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/tooltip.js"></script>
+diff --git a/apps/documenteditor/embed/index_loader.html b/apps/documenteditor/embed/index_loader.html
+index 347eda14..1e8ec1ec 100644
+--- a/apps/documenteditor/embed/index_loader.html
++++ b/apps/documenteditor/embed/index_loader.html
+@@ -333,7 +333,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/LocalStorage.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/utils.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/htmlutils.js"></script>
+diff --git a/apps/documenteditor/forms/app.js b/apps/documenteditor/forms/app.js
+index 5e1da428..3466c2e2 100644
+--- a/apps/documenteditor/forms/app.js
++++ b/apps/documenteditor/forms/app.js
+@@ -56,7 +56,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -101,11 +100,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -115,7 +109,6 @@ require([
+     'underscore',
+     'core',
+     'api',
+-    'analytics',
+     'gateway',
+     'locale'
+ ], function (Sdk, Backbone, _, Core) {
+diff --git a/apps/documenteditor/forms/app/controller/ApplicationController.js b/apps/documenteditor/forms/app/controller/ApplicationController.js
+index 0ed62cd7..47490379 100644
+--- a/apps/documenteditor/forms/app/controller/ApplicationController.js
++++ b/apps/documenteditor/forms/app/controller/ApplicationController.js
+@@ -439,8 +439,6 @@ define([
+ 
+             if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                 Common.UI.alert(config).$window.attr('data-value', id);
+-
+-            (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
+         },
+ 
+         hidePreloader: function() {
+@@ -549,8 +547,6 @@ define([
+             if (msg && msg.msg) {
+                 msg.msg = (msg.msg).toString();
+                 this.showTips([msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)]);
+-
+-                Common.component.Analytics.trackEvent('External Error');
+             }
+         },
+ 
+@@ -643,8 +639,6 @@ define([
+             this.api.asc_setDocInfo(docInfo);
+             this.api.asc_getEditorPermissions();
+             this.api.asc_enableKeyEvents(true);
+-
+-            Common.Analytics.trackEvent('Load', 'Start');
+         },
+ 
+         onRunAutostartMacroses: function() {
+@@ -1196,7 +1190,6 @@ define([
+ 
+             if (this.api)
+                 this.api.asc_Print(new Asc.asc_CDownloadOptions(null, Common.Utils.isChrome || Common.Utils.isOpera || Common.Utils.isGecko && Common.Utils.firefoxVersion>86)); // if isChrome or isOpera == true use asc_onPrintUrl event
+-            Common.component.Analytics.trackEvent('Print');
+         },
+ 
+         onPrintUrl: function(url) {
+@@ -1710,7 +1703,6 @@ define([
+ 
+             Common.Gateway.sendInfo({mode:'view'});
+             Common.Gateway.documentReady();
+-            Common.Analytics.trackEvent('Load', 'Complete');
+             Common.NotificationCenter.trigger('document:ready');
+             Common.UI.TooltipManager.showTip('showFillStatus');
+             requireUserAction = false;
+@@ -1736,11 +1728,9 @@ define([
+                     } else if (this.api && this.appOptions.canPrint){
+                         this.api.asc_Print(new Asc.asc_CDownloadOptions(null, Common.Utils.isChrome || Common.Utils.isOpera || Common.Utils.isGecko && Common.Utils.firefoxVersion>86)); // if isChrome or isOpera == true use asc_onPrintUrl event
+                     }
+-                    Common.Analytics.trackEvent('Save');
+                     break;
+                 case 'print':
+                     this.api.asc_Print(new Asc.asc_CDownloadOptions(null, Common.Utils.isChrome || Common.Utils.isOpera || Common.Utils.isGecko && Common.Utils.firefoxVersion>86)); // if isChrome or isOpera == true use asc_onPrintUrl event
+-                    Common.Analytics.trackEvent('Print');
+                     break;
+                 case 'close':
+                     if (!Common.Controllers.Desktop.process('goback') &&
+@@ -1759,11 +1749,9 @@ define([
+                     break;
+                 case 'download-docx':
+                     this.api.asc_DownloadAs(new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.DOCX));
+-                    Common.Analytics.trackEvent('Save');
+                     break;
+                 case 'download-pdf':
+                     this.api.asc_DownloadAs(new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.PDF));
+-                    Common.Analytics.trackEvent('Save');
+                     break;
+                 case 'share':
+                     (new Common.Views.ShareDialog({
+diff --git a/apps/documenteditor/forms/app_dev.js b/apps/documenteditor/forms/app_dev.js
+index 3ca02552..0d336fd5 100644
+--- a/apps/documenteditor/forms/app_dev.js
++++ b/apps/documenteditor/forms/app_dev.js
+@@ -54,7 +54,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -90,11 +89,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -103,7 +97,6 @@ require([
+     'underscore',
+     'core',
+     'api',
+-    'analytics',
+     'gateway',
+     'locale',
+     'socketio',
+diff --git a/apps/documenteditor/main/app.js b/apps/documenteditor/main/app.js
+index a6e35faa..584f4147 100644
+--- a/apps/documenteditor/main/app.js
++++ b/apps/documenteditor/main/app.js
+@@ -62,7 +62,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -106,11 +105,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -119,7 +113,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale'
+ ], function (Sdk, Backbone, _, Core) {
+diff --git a/apps/documenteditor/main/app/controller/DocumentHolderExt.js b/apps/documenteditor/main/app/controller/DocumentHolderExt.js
+index beb1e836..b946fdde 100644
+--- a/apps/documenteditor/main/app/controller/DocumentHolderExt.js
++++ b/apps/documenteditor/main/app/controller/DocumentHolderExt.js
+@@ -570,7 +570,6 @@ define([], function () {
+                         win.setSettings(props);
+                     }
+                 }
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+             }
+         };
+ 
+@@ -2086,8 +2085,6 @@ define([], function () {
+ 
+                 win.show();
+                 win.setSettings(item.hyperProps.value);
+-
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+             }
+         };
+ 
+@@ -2272,7 +2269,6 @@ define([], function () {
+                 opts.asc_setAdvancedOptions(printopt);
+                 this.api.asc_Print(opts);
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Print Selection');
+             }
+         };
+ 
+@@ -2528,13 +2524,10 @@ define([], function () {
+                     value = (alignto==1) ? Asc.c_oAscObjectsAlignType.Page : ((me.api.asc_getSelectedDrawingObjectsCount()<2 && !alignto || alignto==2) ? Asc.c_oAscObjectsAlignType.Margin : Asc.c_oAscObjectsAlignType.Selected);
+                 if (item.value < 6) {
+                     me.api.put_ShapesAlign(item.value, value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Shape Align');
+                 } else if (item.value == 6) {
+                     me.api.DistributeHorizontally(value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute Horizontally');
+                 } else if (item.value == 7){
+                     me.api.DistributeVertically(value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute Vertically');
+                 }
+             }
+             me.editComplete();
+@@ -2544,7 +2537,6 @@ define([], function () {
+             var me = this;
+             if (item && item.value) {
+                 me.api.asc_mergeSelectedShapes(item.value);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Shapes Merge');
+             }
+             me.editComplete();
+         };
+@@ -2712,7 +2704,6 @@ define([], function () {
+                             if (me.api) {
+                                 me.api.SplitCell(value.columns, value.rows);
+                             }
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Table');
+                         }
+                         me.editComplete();
+                     }
+diff --git a/apps/documenteditor/main/app/controller/HeaderFooterTab.js b/apps/documenteditor/main/app/controller/HeaderFooterTab.js
+index 5b406029..1ea00a34 100644
+--- a/apps/documenteditor/main/app/controller/HeaderFooterTab.js
++++ b/apps/documenteditor/main/app/controller/HeaderFooterTab.js
+@@ -96,7 +96,6 @@ define([
+                     setTimeout(function() {me.api.asc_addImage();}, 1);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', me.view);
+-                // Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             } else if (item.value === 'url') {
+                 (new Common.Views.ImageFromUrlDialog({
+                     handler: function(result, value) {
+@@ -106,8 +105,6 @@ define([
+                                 if (!_.isEmpty(checkUrl)) {
+                                     me.view.fireEvent('insertimage');
+                                     me.api.AddImageUrl([checkUrl]);
+-
+-                                    // Common.component.Analytics.trackEvent('ToolBar', 'Image');
+                                 }
+                             }
+ 
+diff --git a/apps/documenteditor/main/app/controller/LeftMenu.js b/apps/documenteditor/main/app/controller/LeftMenu.js
+index f6e6ea41..4ec45f8a 100644
+--- a/apps/documenteditor/main/app/controller/LeftMenu.js
++++ b/apps/documenteditor/main/app/controller/LeftMenu.js
+@@ -607,8 +607,6 @@ define([
+             var recentDocPage = window.open(url);
+             if (recentDocPage)
+                 recentDocPage.focus();
+-
+-            Common.component.Analytics.trackEvent('Open Recent');
+         },
+ 
+         clickToolbarSettings: function(obj) {
+diff --git a/apps/documenteditor/main/app/controller/Links.js b/apps/documenteditor/main/app/controller/Links.js
+index 3c82f741..90f824fe 100644
+--- a/apps/documenteditor/main/app/controller/Links.js
++++ b/apps/documenteditor/main/app/controller/Links.js
+@@ -258,8 +258,6 @@ define([
+                     }
+                 }
+             }
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Hyperlink');
+         },
+ 
+         onTableContents: function(type, currentTOC){
+diff --git a/apps/documenteditor/main/app/controller/Main.js b/apps/documenteditor/main/app/controller/Main.js
+index 756aa508..ee2ea8ed 100644
+--- a/apps/documenteditor/main/app/controller/Main.js
++++ b/apps/documenteditor/main/app/controller/Main.js
+@@ -460,7 +460,6 @@ define([
+                 this.appOptions.fileChoiceUrl   = this.editorConfig.fileChoiceUrl;
+                 this.appOptions.mergeFolderUrl  = this.editorConfig.mergeFolderUrl;
+                 this.appOptions.saveAsUrl       = this.editorConfig.saveAsUrl;
+-                this.appOptions.canAnalytics    = false;
+                 this.appOptions.canPlugins      = false;
+                 this.appOptions.canMakeActionLink = this.editorConfig.canMakeActionLink;
+                 this.appOptions.canRequestUsers = this.editorConfig.canRequestUsers;
+@@ -1543,9 +1542,6 @@ define([
+                 $('.toolbar').prepend(Common.Utils.String.format('<div class="lazy-{0} x-huge"><div class="toolbar__icon" style="position: absolute; width: 1px; height: 1px;"></div>', dummyClass));
+                 setTimeout(function() { $(Common.Utils.String.format('.toolbar .lazy-{0}', dummyClass)).remove(); }, 10);
+ 
+-                if (this.appOptions.canAnalytics && false)
+-                    Common.component.Analytics.initialize('UA-12442749-13', 'Document Editor');
+-
+                 Common.Gateway.on('applyeditrights',        _.bind(me.onApplyEditRights, me));
+                 Common.Gateway.on('processrightschange',    _.bind(me.onProcessRightsChange, me));
+                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
+@@ -1700,7 +1696,6 @@ define([
+                     this.permissions.edit = this.permissions.review = false;
+ 
+                 this.appOptions.permissionsLicense = licType;
+-                this.appOptions.canAnalytics   = params.asc_getIsAnalyticsEnable();
+                 this.appOptions.canLicense     = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+                 this.appOptions.isLightVersion = params.asc_getIsLight();
+                 /** coauthoring begin **/
+@@ -2152,8 +2147,6 @@ define([
+                 if (msg && msg.msg) {
+                     msg.msg = (msg.msg).toString();
+                     this.showTips([msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)], options);
+-
+-                    Common.component.Analytics.trackEvent('External Error');
+                 }
+             },
+ 
+@@ -2493,8 +2486,6 @@ define([
+ 
+                 if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                     Common.UI.alert(config).$window.attr('data-value', id);
+-
+-                (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
+             },
+ 
+             onCoAuthoringDisconnect: function() {
+@@ -3128,7 +3119,6 @@ define([
+             onPrint: function() {
+                 if (!this.appOptions.canPrint || Common.Utils.ModalWindow.isVisible()) return;
+                 Common.NotificationCenter.trigger('file:print');
+-                Common.component.Analytics.trackEvent('Print');
+             },
+ 
+             onPrintUrl: function(url) {
+@@ -3172,7 +3162,6 @@ define([
+                         var opts = new Asc.asc_CDownloadOptions();
+                         opts.asc_setAdvancedOptions(printopt);
+                         me.api.asc_Print(opts);
+-                        Common.component.Analytics.trackEvent('Print');
+                     };
+ 
+                 if (value) {
+diff --git a/apps/documenteditor/main/app/controller/PageLayout.js b/apps/documenteditor/main/app/controller/PageLayout.js
+index a6366de5..058d046d 100644
+--- a/apps/documenteditor/main/app/controller/PageLayout.js
++++ b/apps/documenteditor/main/app/controller/PageLayout.js
+@@ -225,13 +225,10 @@ define([
+                 var value = this.toolbar.mniAlignToPage.isChecked() ? Asc.c_oAscObjectsAlignType.Page : (this.toolbar.mniAlignToMargin.isChecked() ? Asc.c_oAscObjectsAlignType.Margin : Asc.c_oAscObjectsAlignType.Selected);
+                 if (item.value>-1 && item.value < 6) {
+                     this.api.put_ShapesAlign(item.value, value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Shape Align');
+                 } else if (item.value == 6) {
+                     this.api.DistributeHorizontally(value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 } else if (item.value == 7){
+                     this.api.DistributeVertically(value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 }
+                 this.toolbar.fireEvent('editcomplete', this.toolbar);
+             },
+@@ -245,7 +242,6 @@ define([
+             onClickMenuShapesMerge: function (menu, item, e) {
+                 if (item && item.value) {
+                     this.api.asc_mergeSelectedShapes(item.value); 
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Shapes Merge'); 
+                 }
+                 this.toolbar.fireEvent('editcomplete', this.toolbar);
+             },
+diff --git a/apps/documenteditor/main/app/controller/Toolbar.js b/apps/documenteditor/main/app/controller/Toolbar.js
+index 308164da..7d1fab27 100644
+--- a/apps/documenteditor/main/app/controller/Toolbar.js
++++ b/apps/documenteditor/main/app/controller/Toolbar.js
+@@ -1168,7 +1168,6 @@ define([
+                 this.api.OpenNewDocument();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'New Document');
+         },
+ 
+         onOpenDocument: function(btn, e) {
+@@ -1176,7 +1175,6 @@ define([
+                 this.api.LoadDocumentFromDisk();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Open Document');
+         },
+ 
+         onPrint: function(e) {
+@@ -1187,9 +1185,6 @@ define([
+                 var _main = this.getApplication().getController('Main');
+                 _main.onPrintQuick();
+             }
+-            Common.component.Analytics.trackEvent('Print');
+-            Common.component.Analytics.trackEvent('ToolBar', 'Print');
+-
+         },
+ 
+         onPrintMenu: function (btn, e){
+@@ -1265,9 +1260,6 @@ define([
+             toolbar.btnSave && toolbar.lockToolbar(Common.enumLock.cantSave, !mode.forcesave && !mode.canSaveDocumentToBinary && mode.canSaveToFile || !mode.showSaveButton, {array: [toolbar.btnSave]});
+ 
+             Common.NotificationCenter.trigger('edit:complete', toolbar);
+-
+-            Common.component.Analytics.trackEvent('Save');
+-            Common.component.Analytics.trackEvent('ToolBar', 'Save');
+         },
+ 
+         onBtnChangeState: function(prop) {
+@@ -1282,8 +1274,6 @@ define([
+                 this.api.Undo();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Undo');
+         },
+ 
+         onRedo: function(btn, e) {
+@@ -1291,8 +1281,6 @@ define([
+                 this.api.Redo();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Redo');
+         },
+ 
+         onCopyPaste: function(type, e) {
+@@ -1308,8 +1296,7 @@ define([
+                             }
+                         })).show();
+                     }
+-                } else
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Copy Warning');
++                }
+             }
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+         },
+@@ -1319,7 +1306,6 @@ define([
+                 this.api.asc_EditSelectAll();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Select All');
+         },
+ 
+         onReplace: function(e) {
+@@ -1331,7 +1317,6 @@ define([
+                 this.api.FontSizeIn();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onDecrease: function(e) {
+@@ -1339,7 +1324,6 @@ define([
+                 this.api.FontSizeOut();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onBold: function(btn, e) {
+@@ -1348,7 +1332,6 @@ define([
+                 this.api.put_TextPrBold(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Bold');
+         },
+ 
+         onItalic: function(btn, e) {
+@@ -1357,7 +1340,6 @@ define([
+                 this.api.put_TextPrItalic(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Italic');
+         },
+ 
+         onUnderline: function(btn, e) {
+@@ -1366,7 +1348,6 @@ define([
+                 this.api.put_TextPrUnderline(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Underline');
+         },
+ 
+         onStrikeout: function(btn, e) {
+@@ -1375,7 +1356,6 @@ define([
+                 this.api.put_TextPrStrikeout(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Strikeout');
+         },
+ 
+         onSuperscript: function(btn, e) {
+@@ -1385,7 +1365,6 @@ define([
+                     this.api.put_TextPrBaseline(btn.pressed ? Asc.vertalign_SuperScript : Asc.vertalign_Baseline);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Superscript');
+             }
+         },
+ 
+@@ -1396,7 +1375,6 @@ define([
+                     this.api.put_TextPrBaseline(btn.pressed ? Asc.vertalign_SubScript : Asc.vertalign_Baseline);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Subscript');
+             }
+         },
+ 
+@@ -1405,7 +1383,6 @@ define([
+                 this.api.DecreaseIndent();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Indent');
+         },
+ 
+         onIncOffset: function(btn, e) {
+@@ -1413,7 +1390,6 @@ define([
+                 this.api.IncreaseIndent();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Indent');
+         },
+ 
+         onHorizontalAlign: function(type, btn, e) {
+@@ -1429,7 +1405,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Align');
+         },
+ 
+ 
+@@ -1468,7 +1443,6 @@ define([
+                         callback: _.bind(function(btn) {
+                             if (btn == 'yes') {
+                                 this.api.put_TextPrFontName(record.name);
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                             } else {
+                                 this.toolbar.cmbFontName.setValue(this.api.get_TextProps().get_TextPr().get_FontFamily().get_Name());
+                             }
+@@ -1477,7 +1451,6 @@ define([
+                     });
+                 } else {
+                     this.api.put_TextPrFontName(record.name);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                 }
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -1499,7 +1472,6 @@ define([
+                 this.api.put_TextPrFontSize(this._state.type_fontsize === 'string' ? parseFloat(record.value) : record.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onFontSizeChanged: function(before, combo, record, e) {
+@@ -1680,7 +1652,6 @@ define([
+                 }
+             }
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'List Type');
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+         },
+ 
+@@ -1815,7 +1786,6 @@ define([
+                 if (this.api)
+                     this.api.put_PrLineSpacing(c_paragraphLinerule.LINERULE_AUTO, item.value);
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Line Spacing');
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+             }
+         },
+@@ -1887,7 +1857,6 @@ define([
+                     me.api.put_ShowParaMarks(state);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', me);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Hidden Characters');
+             } else if (item.value === 'table') {
+                 Common.localStorage.setItem("de-show-tableline", state);
+                 me.api && me.api.put_ShowTableEmptyLine(state);
+@@ -1899,8 +1868,6 @@ define([
+             var me = this;
+             if (state) {
+                 me.toolbar.mnuNonPrinting.items[0].setChecked(true, true);
+-
+-                Common.component.Analytics.trackEvent('ToolBar', 'Hidden Characters');
+             } else {
+                 me.toolbar.mnuNonPrinting.items[0].setChecked(false, true);
+             }
+@@ -1915,14 +1882,11 @@ define([
+         onClickPageBreak: function(value, e) {
+             if ( value === 'column' ) {
+                 this.api.put_AddColumnBreak();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Column Break');
+             } else
+             if ( value == 'page' ) {
+                 this.api.put_AddPageBreak();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Page Break');
+             } else {
+                 this.api.add_SectionBreak( value );
+-                Common.component.Analytics.trackEvent('ToolBar', 'Section Break');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -1935,7 +1899,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Table');
+         },
+ 
+         onInsertTableShow: function(menu) {
+@@ -1955,7 +1918,6 @@ define([
+                                 me.api.put_Table(value.columns, value.rows);
+                             }
+ 
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Table');
+                         }
+                         Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+                     }
+@@ -2006,7 +1968,6 @@ define([
+             if (data && data._urls && (!data.c || data.c=='add')) {
+                 this.toolbar.fireEvent('insertimage', this.toolbar);
+                 (data._urls.length>0) && this.api.AddImageUrl(data._urls, undefined, data.token);// for loading from storage
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             }
+         },
+ 
+@@ -2061,7 +2022,6 @@ define([
+                 this.toolbar.btnInsertShape.toggle(false, true);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertShape);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text');
+         },
+ 
+         onInsertShapeHide: function(btn, e) {
+@@ -2080,7 +2040,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Page Orientation');
+         },
+ 
+         onClearStyleClick: function(btn, e) {
+@@ -2124,7 +2083,6 @@ define([
+                     win.setSettings(me.api.asc_GetSectionProps());
+                 }
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Page Size');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2167,8 +2125,6 @@ define([
+                     win.show();
+                     win.setSettings(me.api.asc_GetSectionProps());
+                 }
+-
+-                Common.component.Analytics.trackEvent('ToolBar', 'Page Margins');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2295,8 +2251,6 @@ define([
+         onColorSchemaClick: function(menu, item) {
+             if (this.api) {
+                 this.api.asc_ChangeColorSchemeByIdx(item.value);
+-
+-                Common.component.Analytics.trackEvent('ToolBar', 'Color Scheme');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2340,7 +2294,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Drop Cap');
+         },
+ 
+         onDropCap: function(v) {
+@@ -2444,7 +2397,6 @@ define([
+ 
+                         } else {
+                             this.api.asc_RemoveContentControlWrapper(id);
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Remove Content Control');
+                         }
+                     }
+                 }
+@@ -2476,8 +2428,6 @@ define([
+                     props.put_FormPr(oFormPr);
+                     this.api.asc_AddContentControlTextForm(props);
+                 }
+-
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Content Control');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2499,8 +2449,6 @@ define([
+             if (this.api) {
+                 this.api.asc_SetGlobalContentControlShowHighlight(true, clr.get_r(), clr.get_g(), clr.get_b());
+             }
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Content Controls Color');
+         },
+ 
+         onColumnsSelect: function(menu, item) {
+@@ -2545,7 +2493,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Insert Columns');
+         },
+ 
+         onColumnsProps: function(props) {
+@@ -2622,7 +2569,6 @@ define([
+                     this.toolbar.btnInsertShape.toggle(false, true);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertTextArt);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Text Art');
+             }
+         },
+ 
+@@ -2634,7 +2580,6 @@ define([
+                 this.toolbar.btnEditHeader.menu.hide();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Page Number');
+         },
+         
+         onInsertPageCountClick: function(item, e) {
+@@ -2642,7 +2587,6 @@ define([
+                 this.api.asc_AddPageCount();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Pages Count');
+         },
+ 
+         onPageNumCurrentPosClick: function(item, e) {
+@@ -2652,7 +2596,6 @@ define([
+             if (e.type !== 'click')
+                 this.toolbar.btnEditHeader.menu.hide();
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Page Number');
+         },
+ 
+         onBtnBlankPageClick: function(btn) {
+@@ -2660,7 +2603,6 @@ define([
+                 this.api.asc_AddBlankPage();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Blank Page');
+         },
+ 
+         onWatermarkSelect: function(menu, item) {
+@@ -2697,7 +2639,6 @@ define([
+                     })).show();
+                 }
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Edit ' + item.value);
+             }
+         },
+ 
+@@ -2707,7 +2648,6 @@ define([
+                 this.api.put_Style(record.get('title'));
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Style');
+         },
+ 
+         onListStyleBeforeHide: function(item, e) {
+@@ -2838,8 +2778,6 @@ define([
+                 });
+                 win.show();
+             }
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Save as Style');
+         },
+ 
+         onMenuSaveStyle: function(item, e) {
+@@ -2901,8 +2839,6 @@ define([
+             this.toolbar.mnuFontColorPicker.currentColor = color;
+             if (this.api)
+                 this.api.put_TextColor(color.isAuto ? color.color : Common.Utils.ThemeColor.getRgbColor(color));
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text Color');
+         },
+ 
+         onParagraphColorPickerSelect: function(btn, color) {
+@@ -2926,15 +2862,11 @@ define([
+         onSelectPageColor: function(btn, color) {
+             if (this.api)
+                 this.api.asc_putPageColor(Common.Utils.ThemeColor.getRgbColor(color));
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Page Color');
+         },
+ 
+         onPageNoFillClick: function(item) {
+             if (this.api && item.checked)
+                 this.api.asc_putPageColor(null);
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Page Color');
+         },
+ 
+         onNewBorderColor: function(picker, color) {
+@@ -3183,7 +3115,6 @@ define([
+                 }
+ 
+                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Borders');
+             } 
+         },
+ 
+@@ -3192,7 +3123,6 @@ define([
+                 this.toolbar.btnBorders.options.borderswidth = item.value;
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Border Width');
+             }
+         },
+ 
+@@ -3205,7 +3135,6 @@ define([
+             clr_item.hasClass('selected') && clr_item.removeClass('selected');
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Border Color');
+         },
+ 
+         onAutoBorderColor: function(e) {
+@@ -3220,7 +3149,6 @@ define([
+             !clr_item.hasClass('selected') && clr_item.addClass('selected');
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Border Color');
+         },
+ 
+         onHorizontalLine: function() {
+@@ -3228,7 +3156,6 @@ define([
+                 this.api.asc_addHorizontalRule();
+             
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Horizontal Line');
+         },
+ 
+         eyedropperStart: function () {
+@@ -3253,7 +3180,6 @@ define([
+         onBtnHighlightColor: function(btn) {
+             if (btn.pressed) {
+                 this._setMarkerColor(btn.currentColor);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Highlight Color');
+             }
+             else {
+                 this.api.SetMarkerFormat(false);
+@@ -3374,7 +3300,6 @@ define([
+                     if (e.type !== 'click')
+                         me.toolbar.btnInsertShape.menu.hide();
+                     Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnInsertShape);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Add Shape');
+                 }
+             });
+         },
+@@ -3410,7 +3335,6 @@ define([
+                             if (e.type !== 'click')
+                                 me.toolbar.btnInsertEquation.menu.hide();
+                             Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnInsertEquation);
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+                         }
+                     });
+                 }
+@@ -3438,7 +3362,6 @@ define([
+         onInsertEquationClick: function() {
+             if (this.api && !this._state.in_equation) {
+                 this.api.asc_AddMath();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertEquation);
+         },
+@@ -3746,7 +3669,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnHighlightColor);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Highlight Color');
+         },
+ 
+         onHideMenus: function(e){
+diff --git a/apps/documenteditor/main/app_dev.js b/apps/documenteditor/main/app_dev.js
+index 1357de85..2974d43f 100644
+--- a/apps/documenteditor/main/app_dev.js
++++ b/apps/documenteditor/main/app_dev.js
+@@ -60,7 +60,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -96,11 +95,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -108,7 +102,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale',
+     'socketio',
+diff --git a/apps/documenteditor/mobile/src/controller/Error.jsx b/apps/documenteditor/mobile/src/controller/Error.jsx
+index 6e77ddff..e9cab114 100644
+--- a/apps/documenteditor/mobile/src/controller/Error.jsx
++++ b/apps/documenteditor/mobile/src/controller/Error.jsx
+@@ -364,8 +364,6 @@ const ErrorController = inject('storeAppOptions','storeDocumentInfo')(({storeApp
+                 }
+             ]
+         }).open();
+-
+-        Common.component.Analytics.trackEvent('Internal Error', id.toString());
+     };
+ 
+     return null
+diff --git a/apps/documenteditor/mobile/src/controller/Main.jsx b/apps/documenteditor/mobile/src/controller/Main.jsx
+index 14806811..60cd40a8 100644
+--- a/apps/documenteditor/mobile/src/controller/Main.jsx
++++ b/apps/documenteditor/mobile/src/controller/Main.jsx
+@@ -1510,7 +1510,6 @@ class MainController extends Component {
+ 
+         if (this.api)
+             this.api.asc_Print();
+-        Common.component.Analytics.trackEvent('Print');
+     }
+ 
+     onPrintUrl (url) {
+@@ -1549,8 +1548,6 @@ class MainController extends Component {
+                 text: [msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)],
+                 closeButton: true
+             }).open();
+-
+-            Common.component.Analytics.trackEvent('External Error');
+         }
+     }
+ 
+diff --git a/apps/documenteditor/mobile/src/store/appOptions.js b/apps/documenteditor/mobile/src/store/appOptions.js
+index 5b832f8b..068fbf0b 100644
+--- a/apps/documenteditor/mobile/src/store/appOptions.js
++++ b/apps/documenteditor/mobile/src/store/appOptions.js
+@@ -199,7 +199,6 @@ export class storeAppOptions {
+         this.fileChoiceUrl = config.fileChoiceUrl;
+         this.mergeFolderUrl = config.mergeFolderUrl;
+         this.saveAsUrl = config.saveAsUrl;
+-        this.canAnalytics = false;
+         this.canRequestClose = config.canRequestClose;
+         this.canCloseEditor = false;
+ 
+@@ -236,7 +235,6 @@ export class storeAppOptions {
+         if (params.asc_getRights() !== Asc.c_oRights.Edit)
+             permissions.edit = permissions.review = false;
+         this.review = (permissions.review === undefined) ? (permissions.edit !== false) : permissions.review;
+-        this.canAnalytics = params.asc_getIsAnalyticsEnable();
+         this.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+         this.isLightVersion = params.asc_getIsLight();
+         this.buildVersion = params.asc_getBuildVersion();
+diff --git a/apps/documenteditor/mobile/src/view/app.jsx b/apps/documenteditor/mobile/src/view/app.jsx
+index ca70aedc..46da1b79 100644
+--- a/apps/documenteditor/mobile/src/view/app.jsx
++++ b/apps/documenteditor/mobile/src/view/app.jsx
+@@ -38,8 +38,6 @@ import React from 'react';
+ import { App, View } from 'framework7-react';
+ import { f7ready } from 'framework7-react';
+ 
+-import '../../../../common/Analytics.js';
+-
+ import '../../../../common/Gateway.js';
+ import '../../../../common/main/lib/util/utils.js';
+ 
+diff --git a/apps/pdfeditor/main/app.js b/apps/pdfeditor/main/app.js
+index 702271e0..4365fb9f 100644
+--- a/apps/pdfeditor/main/app.js
++++ b/apps/pdfeditor/main/app.js
+@@ -62,7 +62,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -106,11 +105,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -119,7 +113,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale'
+ ], function (Sdk, Backbone, _, Core) {
+diff --git a/apps/pdfeditor/main/app/controller/DocumentHolderExt.js b/apps/pdfeditor/main/app/controller/DocumentHolderExt.js
+index c04af067..aeb2b762 100644
+--- a/apps/pdfeditor/main/app/controller/DocumentHolderExt.js
++++ b/apps/pdfeditor/main/app/controller/DocumentHolderExt.js
+@@ -1422,7 +1422,6 @@ define([], function () {
+                 opts.asc_setAdvancedOptions(printopt);
+                 this.api.asc_Print(opts);
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Print Selection');
+             }
+         };
+ 
+@@ -1970,8 +1969,6 @@ define([], function () {
+ 
+                 win.show();
+                 win.setSettings(item.hyperProps.value);
+-
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+             }
+         };
+ 
+@@ -2002,8 +1999,6 @@ define([], function () {
+                 });
+                 win.show();
+                 win.setSettings(item.hyperProps.value);
+-
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Edit Hyperlink');
+             }
+         };
+ 
+@@ -2013,7 +2008,6 @@ define([], function () {
+             }
+ 
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Remove Hyperlink');
+         };
+ 
+         dh.onInsertImageUrl = function(placeholder, obj, x, y) {
+@@ -2062,7 +2056,6 @@ define([], function () {
+                             if (me.api) {
+                                 me.api.SplitCell(value.columns, value.rows);
+                             }
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Table Split');
+                         }
+                         me.editComplete();
+                     }
+@@ -2085,7 +2078,6 @@ define([], function () {
+             }
+ 
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Table Cell Align');
+         };
+ 
+         dh.onTableDistRows = function () {
+@@ -2121,7 +2113,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Table Settings Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2163,7 +2154,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Image Settings Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2188,7 +2178,6 @@ define([], function () {
+                 }
+ 
+                 me.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Set Image Original Size');
+             }
+         };
+ 
+@@ -2254,7 +2243,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Image Shape Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2289,7 +2277,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Chart Settings Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2322,7 +2309,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Image Paragraph Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2335,37 +2321,31 @@ define([], function () {
+         dh.onGroupImg = function(item) {
+             this.api && this.api.groupShapes();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Group Image');
+         };
+ 
+         dh.onUnGroupImg = function(item) {
+             this.api && this.api.unGroupShapes();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'UnGroup Image');
+         };
+ 
+         dh.onArrangeFront = function(item) {
+             this.api && this.api.shapes_bringToFront();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Bring To Front');
+         };
+ 
+         dh.onArrangeBack = function(item) {
+             this.api && this.api.shapes_bringToBack();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Bring To Back');
+         };
+ 
+         dh.onArrangeForward = function(item) {
+             this.api && this.api.shapes_bringForward();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Send Forward');
+         };
+ 
+         dh.onArrangeBackward = function(item) {
+             this.api && this.api.shapes_bringBackward();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Send Backward');
+         };
+ 
+         dh.onImgShapeAlign = function (menu, item) {
+@@ -2375,13 +2355,10 @@ define([], function () {
+                 value = value ? Asc.c_oAscObjectsAlignType.Page : Asc.c_oAscObjectsAlignType.Selected;
+                 if (item.value < 6) {
+                     me.api.put_ShapesAlign(item.value, value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Shape Align');
+                 } else if (item.value == 6) {
+                     me.api.DistributeHorizontally(value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute Horizontally');
+                 } else if (item.value == 7){
+                     me.api.DistributeVertically(value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute Vertically');
+                 }
+                 me.editComplete();
+             }
+@@ -2391,7 +2368,6 @@ define([], function () {
+             var me = this;
+             if (item && item.value) {
+                 me.api.asc_mergeSelectedShapes(item.value);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Shapes Merge');
+             }
+             me.editComplete();
+         };
+@@ -2413,7 +2389,6 @@ define([], function () {
+             }
+ 
+             me.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Text Vertical Align');
+         };
+ 
+         dh.onParagraphDirection = function(menu, item) {
+@@ -2424,7 +2399,6 @@ define([], function () {
+                 me.api.ShapeApply(properties);
+             }
+             me.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Text Direction');
+         };
+ 
+         dh.tableSelectText = function(menu, item) {
+@@ -2570,7 +2544,6 @@ define([], function () {
+                     }
+                 }
+             }
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+         };
+ 
+         dh.onShowForeignCursorLabel = function(UserId, X, Y, color) {
+diff --git a/apps/pdfeditor/main/app/controller/InsTab.js b/apps/pdfeditor/main/app/controller/InsTab.js
+index 4407bf3c..eef1f421 100644
+--- a/apps/pdfeditor/main/app/controller/InsTab.js
++++ b/apps/pdfeditor/main/app/controller/InsTab.js
+@@ -384,8 +384,6 @@ define([
+                     win.setSettings(props);
+                 }
+             }
+-
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Hyperlink');
+         },
+ 
+         onDialogAddAnnotLink: function(arrIds) {
+@@ -476,8 +474,6 @@ define([
+ 
+                                 me.api.put_Table(value.columns, value.rows);
+                             }
+-
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Table');
+                         }
+                         Common.NotificationCenter.trigger('edit:complete', me.view);
+                     }
+@@ -500,7 +496,6 @@ define([
+                 setTimeout(function() {me.api.asc_addImage();}, 1);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.view);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             } else if (opts === 'url') {
+                 (new Common.Views.ImageFromUrlDialog({
+                     handler: function(result, value) {
+@@ -510,8 +505,6 @@ define([
+                                 if (!_.isEmpty(checkUrl)) {
+                                     me.view.fireEvent('insertimage', me.view);
+                                     me.api.AddImageUrl([checkUrl]);
+-
+-                                    Common.component.Analytics.trackEvent('ToolBar', 'Image');
+                                 } else {
+                                     Common.UI.warning({
+                                         msg: this.textEmptyImgUrl
+@@ -548,7 +541,6 @@ define([
+             if (data && data._urls && (!data.c || data.c=='add')) {
+                 this.view.fireEvent('insertimage', this.view);
+                 (data._urls.length>0) && this.api.AddImageUrl(data._urls, undefined, data.token);// for loading from storage
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             }
+         },
+ 
+@@ -606,7 +598,6 @@ define([
+                 this.view.btnsInsertShape.toggle(false, true);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.view);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text');
+         },
+ 
+         onInsertShape: function (type) {
+@@ -626,7 +617,6 @@ define([
+                     me.view.btnsInsertText.toggle(false, true);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', me.view);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Shape');
+             }
+         },
+ 
+@@ -640,7 +630,6 @@ define([
+                 me.view.btnsInsertShape.toggle(false, true);
+ 
+             Common.NotificationCenter.trigger('edit:complete', me.view);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text Art');
+         },
+ 
+         onEditHeaderClick: function(type, e) {
+@@ -823,7 +812,6 @@ define([
+                             if (e.type !== 'click')
+                                 me.view.btnInsertEquation.menu.hide();
+                             Common.NotificationCenter.trigger('edit:complete', me.view, me.view.btnInsertEquation);
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+                         }
+                     });
+                 }
+@@ -851,7 +839,6 @@ define([
+         onInsertEquationClick: function() {
+             if (this.api) {
+                 this.api.asc_AddMath();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.view, this.view.btnInsertEquation);
+         },
+diff --git a/apps/pdfeditor/main/app/controller/LeftMenu.js b/apps/pdfeditor/main/app/controller/LeftMenu.js
+index d7382bb6..6c937027 100644
+--- a/apps/pdfeditor/main/app/controller/LeftMenu.js
++++ b/apps/pdfeditor/main/app/controller/LeftMenu.js
+@@ -577,8 +577,6 @@ define([
+             var recentDocPage = window.open(url);
+             if (recentDocPage)
+                 recentDocPage.focus();
+-
+-            Common.component.Analytics.trackEvent('Open Recent');
+         },
+ 
+         clickToolbarSettings: function(obj) {
+diff --git a/apps/pdfeditor/main/app/controller/Main.js b/apps/pdfeditor/main/app/controller/Main.js
+index e3c1f01c..9ee9431c 100644
+--- a/apps/pdfeditor/main/app/controller/Main.js
++++ b/apps/pdfeditor/main/app/controller/Main.js
+@@ -407,7 +407,6 @@ define([
+                 this.appOptions.sharingSettingsUrl = this.editorConfig.sharingSettingsUrl;
+                 this.appOptions.fileChoiceUrl   = this.editorConfig.fileChoiceUrl;
+                 this.appOptions.saveAsUrl       = this.editorConfig.saveAsUrl;
+-                this.appOptions.canAnalytics    = false;
+                 this.appOptions.canPlugins      = false;
+                 this.appOptions.canMakeActionLink = this.editorConfig.canMakeActionLink;
+                 this.appOptions.canRequestUsers = this.editorConfig.canRequestUsers;
+@@ -1170,9 +1169,6 @@ define([
+                 $('.toolbar').prepend(Common.Utils.String.format('<div class="lazy-{0} x-huge"><div class="toolbar__icon" style="position: absolute; width: 1px; height: 1px;"></div>', dummyClass));
+                 setTimeout(function() { $(Common.Utils.String.format('.toolbar .lazy-{0}', dummyClass)).remove(); }, 10);
+ 
+-                if (this.appOptions.canAnalytics && false)
+-                    Common.component.Analytics.initialize('UA-12442749-13', 'Document Editor');
+-
+                 Common.Gateway.on('applyeditrights',        _.bind(me.onApplyEditRights, me));
+                 Common.Gateway.on('processrightschange',    _.bind(me.onProcessRightsChange, me));
+                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
+@@ -1332,7 +1328,6 @@ define([
+                 this.appOptions.isXpsViewer = /^(?:(djvu|xps|oxps))$/.test(this.document.fileType) || Common.Locale.getDefaultLanguage() === 'ru';
+                 this.appOptions.isForm = !this.appOptions.isXpsViewer && !!window.isPDFForm;
+                 this.appOptions.permissionsLicense = licType;
+-                this.appOptions.canAnalytics   = params.asc_getIsAnalyticsEnable();
+                 this.appOptions.canLicense     = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+                 this.appOptions.isLightVersion = params.asc_getIsLight();
+                 this.appOptions.canCoAuthoring = !this.appOptions.isLightVersion;
+@@ -1711,8 +1706,6 @@ define([
+                 if (msg && msg.msg) {
+                     msg.msg = (msg.msg).toString();
+                     this.showTips([msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)], options);
+-
+-                    Common.component.Analytics.trackEvent('External Error');
+                 }
+             },
+ 
+@@ -2011,8 +2004,6 @@ define([
+ 
+                 if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                     Common.UI.alert(config).$window.attr('data-value', id);
+-
+-                (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
+             },
+ 
+             onOpenLinkPdfForm: function(sURI, onAllow, onCancel) {
+@@ -2556,7 +2547,6 @@ define([
+             onPrint: function() {
+                 if (!this.appOptions.canPrint || Common.Utils.ModalWindow.isVisible()) return;
+                 Common.NotificationCenter.trigger('file:print');
+-                Common.component.Analytics.trackEvent('Print');
+             },
+ 
+             onPrintUrl: function(url) {
+@@ -2599,7 +2589,6 @@ define([
+                             var opts = new Asc.asc_CDownloadOptions();
+                             opts.asc_setAdvancedOptions(printopt);
+                             me.api.asc_Print(opts);
+-                            Common.component.Analytics.trackEvent('Print');
+                         };
+ 
+                     if (value) {
+diff --git a/apps/pdfeditor/main/app/controller/Toolbar.js b/apps/pdfeditor/main/app/controller/Toolbar.js
+index 25efbd0e..750b5395 100644
+--- a/apps/pdfeditor/main/app/controller/Toolbar.js
++++ b/apps/pdfeditor/main/app/controller/Toolbar.js
+@@ -774,7 +774,6 @@ define([
+                 this.api.OpenNewDocument();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'New Document');
+         },
+ 
+         onOpenDocument: function(btn, e) {
+@@ -782,7 +781,6 @@ define([
+                 this.api.LoadDocumentFromDisk();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Open Document');
+         },
+ 
+         onPrint: function(e) {
+@@ -793,8 +791,6 @@ define([
+                 var _main = this.getApplication().getController('Main');
+                 _main.onPrintQuick();
+             }
+-            Common.component.Analytics.trackEvent('Print');
+-            Common.component.Analytics.trackEvent('ToolBar', 'Print');
+ 
+         },
+ 
+@@ -873,8 +869,6 @@ define([
+                 this.api.asc_Save();
+                 toolbar.btnSave && toolbar.lockToolbar(Common.enumLock.cantSave, !toolbar.mode.forcesave && toolbar.mode.canSaveToFile && !toolbar.mode.canSaveDocumentToBinary || !toolbar.mode.showSaveButton,
+                                                         {array: [toolbar.btnSave]});
+-                Common.component.Analytics.trackEvent('Save');
+-                Common.component.Analytics.trackEvent('ToolBar', 'Save');
+                 Common.NotificationCenter.trigger('edit:complete', toolbar);
+             }
+         },
+@@ -922,7 +916,6 @@ define([
+                 this.api.Undo();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Undo');
+         },
+ 
+         onRedo: function(btn, e) {
+@@ -931,7 +924,6 @@ define([
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'Redo');
+         },
+ 
+         onCopyPaste: function(type, e) {
+@@ -948,7 +940,6 @@ define([
+                         })).show();
+                     }
+                 } else
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Copy Warning');
+             }
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+         },
+@@ -958,7 +949,6 @@ define([
+                 this.api.asc_EditSelectAll();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Select All');
+         },
+ 
+         onSelectTool: function (type, btn, state, e) {
+@@ -1260,7 +1250,6 @@ define([
+             this.api && this.api.AddFreeTextAnnot(type);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnTextComment);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text');
+         },
+ 
+          onBtnShapeCommentClick: function(btn, e) {
+@@ -1327,7 +1316,6 @@ define([
+                 $(document.body).off('mouseup', this.binding.checkInsertShapeComment);
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnShapeComment);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Shape Annotation');
+         },
+ 
+         onStartAddShapeChanged: function() {
+@@ -1372,7 +1360,6 @@ define([
+             this.api && this.api.AddStampAnnot(type);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnStamp);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Stamp');
+         },
+ 
+         onStampShowAfter: function(menu) {
+@@ -2121,7 +2108,6 @@ define([
+                 this.api.FontSizeIn();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onDecrease: function(e) {
+@@ -2129,7 +2115,6 @@ define([
+                 this.api.FontSizeOut();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onBold: function(btn, e) {
+@@ -2138,7 +2123,6 @@ define([
+                 this.api.put_TextPrBold(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Bold');
+         },
+ 
+         onItalic: function(btn, e) {
+@@ -2147,7 +2131,6 @@ define([
+                 this.api.put_TextPrItalic(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Italic');
+         },
+ 
+         onTextUnderline: function(btn, e) {
+@@ -2156,7 +2139,6 @@ define([
+                 this.api.put_TextPrUnderline(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Underline');
+         },
+ 
+         onTextStrikeout: function(btn, e) {
+@@ -2165,7 +2147,6 @@ define([
+                 this.api.put_TextPrStrikeout(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Strikeout');
+         },
+ 
+         onSuperscript: function(btn, e) {
+@@ -2175,7 +2156,6 @@ define([
+                     this.api.put_TextPrBaseline(btn.pressed ? Asc.vertalign_SuperScript : Asc.vertalign_Baseline);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Superscript');
+             }
+         },
+ 
+@@ -2186,7 +2166,6 @@ define([
+                     this.api.put_TextPrBaseline(btn.pressed ? Asc.vertalign_SubScript : Asc.vertalign_Baseline);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Subscript');
+             }
+         },
+ 
+@@ -2195,7 +2174,6 @@ define([
+                 this.api.DecreaseIndent();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Indent');
+         },
+ 
+         onIncOffset: function(btn, e) {
+@@ -2203,7 +2181,6 @@ define([
+                 this.api.IncreaseIndent();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Indent');
+         },
+ 
+         onChangeCase: function(menu, item, e) {
+@@ -2224,7 +2201,6 @@ define([
+                 this.api.put_PrAlign(item.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Horizontal Align');
+         },
+ 
+         onMenuVerticalAlignSelect: function(menu, item) {
+@@ -2239,7 +2215,6 @@ define([
+                 this.api.setVerticalAlign(item.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Vertical Align');
+         },
+ 
+         onMarkers: function(btn, e) {
+@@ -2317,7 +2292,6 @@ define([
+                         callback: _.bind(function(btn) {
+                             if (btn == 'yes') {
+                                 this.api.put_TextPrFontName(record.name);
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                             } else {
+                                 this.toolbar.cmbFontName.setValue(this.api.get_TextProps().get_TextPr().get_FontFamily().get_Name());
+                             }
+@@ -2326,7 +2300,6 @@ define([
+                     });
+                 } else {
+                     this.api.put_TextPrFontName(record.name);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                 }
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2347,7 +2320,6 @@ define([
+                 this.api.put_TextPrFontSize(record.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onFontSizeChanged: function(before, combo, record, e) {
+@@ -2449,7 +2421,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'List Type');
+         },
+ 
+         onLineSpaceToggle: function(menu, item, state, e) {
+@@ -2459,7 +2430,6 @@ define([
+                     this.api.put_PrLineSpacing(c_paragraphLinerule.LINERULE_AUTO, item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Line Spacing');
+             }
+         },
+ 
+@@ -2508,7 +2478,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Insert Columns');
+         },
+ 
+         onBeforeColumns: function() {
+@@ -2557,13 +2526,10 @@ define([
+                 var value = this.toolbar.mniAlignToSlide.isChecked() ? Asc.c_oAscObjectsAlignType.Page : Asc.c_oAscObjectsAlignType.Selected;
+                 if (item.value>-1 && item.value < 6) {
+                     this.api.put_ShapesAlign(item.value, value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Shape Align');
+                 } else if (item.value == 6) {
+                     this.api.DistributeHorizontally(value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 } else if (item.value == 7){
+                     this.api.DistributeVertically(value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 }
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+             }
+@@ -2574,27 +2540,21 @@ define([
+                 switch (item.value) {
+                     case 1:
+                         this.api.shapes_bringToFront();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 2:
+                         this.api.shapes_bringToBack();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 3:
+                         this.api.shapes_bringForward();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 4:
+                         this.api.shapes_bringBackward();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 5:
+                         this.api.groupShapes();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Group');
+                         break;
+                     case 6:
+                         this.api.unGroupShapes();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape UnGroup');
+                         break;
+                 }
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2610,7 +2570,6 @@ define([
+         onClickMenuShapesMerge: function (menu, item) {
+             if (item && item.value) {
+                 this.api.asc_mergeSelectedShapes(item.value); 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Shapes Merge'); 
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+         },
+@@ -2659,7 +2618,6 @@ define([
+             if (this.api)
+                 this.api.put_TextColor(Common.Utils.ThemeColor.getRgbColor(color));
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text Color');
+         },
+ 
+         onBtnFontColor: function() {
+@@ -2750,13 +2708,11 @@ define([
+                 me.api.SetMarkerFormat(undefined, true, true, parseInt(r, 16), parseInt(g, 16), parseInt(b, 16));
+             }
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnTextHighlightColor);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Highlight Color');
+         },
+ 
+         onBtnTextHighlightColor: function(btn) {
+             if (btn.pressed) {
+                 this._setMarkerColor(btn.currentColor);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Highlight Color');
+             }
+             else {
+                 this.api.SetMarkerFormat(undefined, false);
+diff --git a/apps/pdfeditor/main/app_dev.js b/apps/pdfeditor/main/app_dev.js
+index 70161123..99eadc9a 100644
+--- a/apps/pdfeditor/main/app_dev.js
++++ b/apps/pdfeditor/main/app_dev.js
+@@ -60,7 +60,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -96,11 +95,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -108,7 +102,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale',
+     'socketio',
+diff --git a/apps/presentationeditor/embed/index.html b/apps/presentationeditor/embed/index.html
+index 0dbf6721..472e1d37 100644
+--- a/apps/presentationeditor/embed/index.html
++++ b/apps/presentationeditor/embed/index.html
+@@ -267,7 +267,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/dropdown.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/modal.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/tooltip.js"></script>
+diff --git a/apps/presentationeditor/embed/index_loader.html b/apps/presentationeditor/embed/index_loader.html
+index d4d8a7e3..1f393243 100644
+--- a/apps/presentationeditor/embed/index_loader.html
++++ b/apps/presentationeditor/embed/index_loader.html
+@@ -330,7 +330,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/LocalStorage.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/utils.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/htmlutils.js"></script>
+diff --git a/apps/presentationeditor/main/app.js b/apps/presentationeditor/main/app.js
+index 8e6201a2..187fe20c 100644
+--- a/apps/presentationeditor/main/app.js
++++ b/apps/presentationeditor/main/app.js
+@@ -62,7 +62,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -105,11 +104,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -118,7 +112,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale'
+ ], function (Sdk, Backbone, _, Core) {
+diff --git a/apps/presentationeditor/main/app/controller/DocumentHolderExt.js b/apps/presentationeditor/main/app/controller/DocumentHolderExt.js
+index c269ed02..b22c8cae 100644
+--- a/apps/presentationeditor/main/app/controller/DocumentHolderExt.js
++++ b/apps/presentationeditor/main/app/controller/DocumentHolderExt.js
+@@ -721,7 +721,6 @@ define([], function () {
+                     }
+                 }
+             }
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+         };
+ 
+         dh.onPaintSlideNum = function (slideNum) {
+@@ -1548,7 +1547,6 @@ define([], function () {
+                 win.show();
+                 win.setSettings(item.hyperProps.value);
+ 
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+             }
+         };
+ 
+@@ -1576,7 +1574,6 @@ define([], function () {
+                 win.show();
+                 win.setSettings(item.hyperProps.value);
+ 
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Edit Hyperlink');
+             }
+         };
+ 
+@@ -1586,7 +1583,6 @@ define([], function () {
+             }
+ 
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Remove Hyperlink');
+         };
+ 
+         dh.saveAsPicture = function() {
+@@ -1986,7 +1982,6 @@ define([], function () {
+                 this.api.SelectAllSlides();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Select All Slides');
+             }
+         };
+ 
+@@ -1998,7 +1993,6 @@ define([], function () {
+                 opts.asc_setAdvancedOptions(printopt);
+                 this.api.asc_Print(opts);
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Print Selection');
+             }
+         };
+ 
+@@ -2008,7 +2002,6 @@ define([], function () {
+                 this.api.AddSlide();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Add Slide');
+             }
+         };
+ 
+@@ -2018,7 +2011,6 @@ define([], function () {
+                 this.api.DublicateSlide();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Dublicate Slide');
+             }
+         };
+ 
+@@ -2028,7 +2020,6 @@ define([], function () {
+                 this.api.DeleteSlide();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Delete Slide');
+             }
+         };
+ 
+@@ -2037,7 +2028,6 @@ define([], function () {
+                 this.api.ResetSlide();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Reset Slide');
+             }
+         };
+ 
+@@ -2046,7 +2036,6 @@ define([], function () {
+                 this.api.asc_moveSelectedSlidesToStart();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Move Slide to Start');
+             }
+         };
+ 
+@@ -2055,7 +2044,6 @@ define([], function () {
+                 this.api.asc_moveSelectedSlidesToEnd();
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Move Slide to End');
+             }
+         };
+ 
+@@ -2068,7 +2056,6 @@ define([], function () {
+                 this.api.asc_HideSlides(item.checked);
+ 
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Hide Slides');
+             }
+         };
+ 
+@@ -2076,7 +2063,6 @@ define([], function () {
+             if (this.api) {
+                 this.api.ChangeLayout(record.get('data').idx);
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Change Layout');
+             }
+         };
+ 
+@@ -2084,7 +2070,6 @@ define([], function () {
+             if (this.api) {
+                 this.api.ChangeTheme(record.get('themeId'), true);
+                 this.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Change Layout');
+             }
+         };
+ 
+@@ -2102,7 +2087,6 @@ define([], function () {
+                             if (me.api) {
+                                 me.api.SplitCell(value.columns, value.rows);
+                             }
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Table Split');
+                         }
+                         me.editComplete();
+                     }
+@@ -2125,7 +2109,6 @@ define([], function () {
+             }
+ 
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Table Cell Align');
+         };
+ 
+         dh.onTableDistRows = function () {
+@@ -2180,7 +2163,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Table Settings Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2222,7 +2204,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Image Settings Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2247,7 +2228,6 @@ define([], function () {
+                 }
+ 
+                 me.editComplete();
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Set Image Original Size');
+             }
+         };
+ 
+@@ -2313,7 +2293,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Image Shape Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2346,7 +2325,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Image Paragraph Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2381,7 +2359,6 @@ define([], function () {
+                                             }
+                                         }
+                                         me.editComplete();
+-                                        Common.component.Analytics.trackEvent('DocumentHolder', 'Chart Settings Advanced');
+                                     }
+                                 })).show();
+                             break;
+@@ -2394,37 +2371,31 @@ define([], function () {
+         dh.onGroupImg = function(item) {
+             this.api && this.api.groupShapes();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Group Image');
+         };
+ 
+         dh.onUnGroupImg = function(item) {
+             this.api && this.api.unGroupShapes();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'UnGroup Image');
+         };
+ 
+         dh.onArrangeFront = function(item) {
+             this.api && this.api.shapes_bringToFront();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Bring To Front');
+         };
+ 
+         dh.onArrangeBack = function(item) {
+             this.api && this.api.shapes_bringToBack();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Bring To Back');
+         };
+ 
+         dh.onArrangeForward = function(item) {
+             this.api && this.api.shapes_bringForward();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Send Forward');
+         };
+ 
+         dh.onArrangeBackward = function(item) {
+             this.api && this.api.shapes_bringBackward();
+             this.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Send Backward');
+         };
+ 
+         dh.onImgShapeAlign = function (menu, item) {
+@@ -2434,13 +2405,10 @@ define([], function () {
+                 value = value ? Asc.c_oAscObjectsAlignType.Slide : Asc.c_oAscObjectsAlignType.Selected;
+                 if (item.value < 6) {
+                     me.api.put_ShapesAlign(item.value, value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Shape Align');
+                 } else if (item.value == 6) {
+                     me.api.DistributeHorizontally(value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute Horizontally');
+                 } else if (item.value == 7){
+                     me.api.DistributeVertically(value);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute Vertically');
+                 }
+                 me.editComplete();
+             }
+@@ -2450,7 +2418,6 @@ define([], function () {
+             var me = this;
+             if (item && item.value) {
+                 me.api.asc_mergeSelectedShapes(item.value);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Shapes Merge');
+             }
+             me.editComplete();
+         };
+@@ -2472,7 +2439,6 @@ define([], function () {
+             }
+ 
+             me.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Text Vertical Align');
+         };
+ 
+         dh.onParagraphDirection = function(menu, item) {
+@@ -2483,7 +2449,6 @@ define([], function () {
+                 me.api.ShapeApply(properties);
+             }
+             me.editComplete();
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Text Direction');
+         };
+ 
+         dh.tableSelectText = function(menu, item) {
+diff --git a/apps/presentationeditor/main/app/controller/LeftMenu.js b/apps/presentationeditor/main/app/controller/LeftMenu.js
+index e7a5fbb7..7e7434cf 100644
+--- a/apps/presentationeditor/main/app/controller/LeftMenu.js
++++ b/apps/presentationeditor/main/app/controller/LeftMenu.js
+@@ -470,8 +470,6 @@ define([
+             var recentDocPage = window.open(url);
+             if (recentDocPage)
+                 recentDocPage.focus();
+-
+-            Common.component.Analytics.trackEvent('Open Recent');
+         },
+ 
+         clickToolbarSettings: function(obj) {
+diff --git a/apps/presentationeditor/main/app/controller/Main.js b/apps/presentationeditor/main/app/controller/Main.js
+index 04ff6a59..a8b6f253 100644
+--- a/apps/presentationeditor/main/app/controller/Main.js
++++ b/apps/presentationeditor/main/app/controller/Main.js
+@@ -426,7 +426,6 @@ define([
+                 this.appOptions.sharingSettingsUrl = this.editorConfig.sharingSettingsUrl;
+                 this.appOptions.saveAsUrl       = this.editorConfig.saveAsUrl;
+                 this.appOptions.fileChoiceUrl   = this.editorConfig.fileChoiceUrl;
+-                this.appOptions.canAnalytics    = false;
+                 this.appOptions.canPlugins      = false;
+                 this.appOptions.canRequestUsers = this.editorConfig.canRequestUsers;
+                 this.appOptions.canRequestSendNotify = this.editorConfig.canRequestSendNotify;
+@@ -1107,9 +1106,6 @@ define([
+                 $('.toolbar').prepend(Common.Utils.String.format('<div class="lazy-{0} x-huge"><div class="toolbar__icon" style="position: absolute; width: 1px; height: 1px;"></div>', dummyClass));
+                 setTimeout(function() { $(Common.Utils.String.format('.toolbar .lazy-{0}', dummyClass)).remove(); }, 10);
+ 
+-                if (this.appOptions.canAnalytics && false)
+-                    Common.component.Analytics.initialize('UA-12442749-13', 'Presentation Editor');
+-
+                 Common.Gateway.on('applyeditrights',        _.bind(me.onApplyEditRights, me));
+                 Common.Gateway.on('processrightschange',    _.bind(me.onProcessRightsChange, me));
+                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
+@@ -1359,7 +1355,6 @@ define([
+                                                  (this.editorConfig.canRequestEditRights || this.editorConfig.mode !== 'view'); // if mode=="view" -> canRequestEditRights must be defined
+                 this.appOptions.isEdit         = this.appOptions.canLicense && this.appOptions.canEdit && this.editorConfig.mode !== 'view';
+                 this.appOptions.canDownload    = this.permissions.download !== false;
+-                this.appOptions.canAnalytics   = params.asc_getIsAnalyticsEnable();
+                 this.appOptions.canComments    = this.appOptions.canLicense && (this.permissions.comment===undefined ? this.appOptions.isEdit : this.permissions.comment) && (this.editorConfig.mode !== 'view');
+                 this.appOptions.canComments    = this.appOptions.canComments && !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.comments===false);
+                 this.appOptions.canViewComments = this.appOptions.canComments || !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.comments===false);
+@@ -1645,8 +1640,6 @@ define([
+                 if (msg && msg.msg) {
+                     msg.msg = (msg.msg).toString();
+                     this.showTips([msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)]);
+-
+-                    Common.component.Analytics.trackEvent('External Error');
+                 }
+             },
+ 
+@@ -1934,8 +1927,6 @@ define([
+ 
+                 if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                     Common.UI.alert(config).$window.attr('data-value', id);
+-
+-                (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
+             },
+ 
+             onCoAuthoringDisconnect: function() {
+@@ -2531,7 +2522,6 @@ define([
+             onPrint: function() {
+                 if (!this.appOptions.canPrint || Common.Utils.ModalWindow.isVisible()) return;
+                 Common.NotificationCenter.trigger('file:print');
+-                Common.component.Analytics.trackEvent('Print');
+             },
+ 
+             onPrintUrl: function(url) {
+@@ -2575,7 +2565,6 @@ define([
+                         var opts = new Asc.asc_CDownloadOptions();
+                         opts.asc_setAdvancedOptions(printopt);
+                         me.api.asc_Print(opts);
+-                        Common.component.Analytics.trackEvent('Print');
+                     };
+ 
+                 if (value) {
+diff --git a/apps/presentationeditor/main/app/controller/SlideMasterTab.js b/apps/presentationeditor/main/app/controller/SlideMasterTab.js
+index c0a01083..953037d9 100644
+--- a/apps/presentationeditor/main/app/controller/SlideMasterTab.js
++++ b/apps/presentationeditor/main/app/controller/SlideMasterTab.js
+@@ -281,7 +281,6 @@ define([
+             this._addPlaceHolder(btn.pressed, value, isVertical);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.view);
+-            Common.component.Analytics.trackEvent('SlideMasterTab', 'Add Placeholder');
+         },
+ 
+         changeViewMode: function (mode) {
+diff --git a/apps/presentationeditor/main/app/controller/Toolbar.js b/apps/presentationeditor/main/app/controller/Toolbar.js
+index cf23bd08..ec7fe684 100644
+--- a/apps/presentationeditor/main/app/controller/Toolbar.js
++++ b/apps/presentationeditor/main/app/controller/Toolbar.js
+@@ -1107,7 +1107,6 @@ define([
+                 this.api.OpenNewDocument();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'New Document');
+         },
+ 
+         onOpenDocument: function(btn, e) {
+@@ -1115,7 +1114,6 @@ define([
+                 this.api.LoadDocumentFromDisk();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Open Document');
+         },
+ 
+         onAddSlide: function(type) {
+@@ -1123,7 +1121,6 @@ define([
+                 this.api.AddSlide(type);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Slide');
+             }
+         },
+ 
+@@ -1132,7 +1129,6 @@ define([
+                 this.api.DublicateSlide();
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Duplicate Slide');
+             }
+         },
+ 
+@@ -1146,7 +1142,6 @@ define([
+                 this.api.ChangeLayout(type);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Change Layout');
+             }
+         },
+ 
+@@ -1217,8 +1212,6 @@ define([
+                 _main.onPrintQuick();
+             }
+ 
+-            Common.component.Analytics.trackEvent('Print');
+-            Common.component.Analytics.trackEvent('ToolBar', 'Print');
+         },
+ 
+         onPrintMenu: function (btn, e){
+@@ -1250,8 +1243,6 @@ define([
+             toolbar.btnSave && toolbar.lockToolbar(Common.enumLock.cantSave, !toolbar.mode.forcesave && !toolbar.mode.canSaveDocumentToBinary, {array: [toolbar.btnSave]});
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('Save');
+-            Common.component.Analytics.trackEvent('ToolBar', 'Save');
+         },
+ 
+         onBtnChangeState: function(prop) {
+@@ -1267,7 +1258,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Undo');
+         },
+ 
+         onRedo: function(btn, e) {
+@@ -1276,7 +1266,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Redo');
+         },
+ 
+         onCopyPaste: function(type, e) {
+@@ -1292,8 +1281,7 @@ define([
+                             }
+                         })).show();
+                     }
+-                } else
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Copy Warning');
++                }
+             }
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+         },
+@@ -1303,7 +1291,6 @@ define([
+                 this.api.asc_EditSelectAll();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Select All');
+         },
+ 
+         onReplace: function(e) {
+@@ -1315,7 +1302,6 @@ define([
+                 this.api.FontSizeIn();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onDecrease: function(e) {
+@@ -1323,7 +1309,6 @@ define([
+                 this.api.FontSizeOut();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onBold: function(btn, e) {
+@@ -1332,7 +1317,6 @@ define([
+                 this.api.put_TextPrBold(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Bold');
+         },
+ 
+         onItalic: function(btn, e) {
+@@ -1341,7 +1325,6 @@ define([
+                 this.api.put_TextPrItalic(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Italic');
+         },
+ 
+         onUnderline: function(btn, e) {
+@@ -1350,7 +1333,6 @@ define([
+                 this.api.put_TextPrUnderline(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Underline');
+         },
+ 
+         onStrikeout: function(btn, e) {
+@@ -1359,7 +1341,6 @@ define([
+                 this.api.put_TextPrStrikeout(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Strikeout');
+         },
+ 
+         onSuperscript: function(btn, e) {
+@@ -1369,7 +1350,6 @@ define([
+                     this.api.put_TextPrBaseline(btn.pressed ? Asc.vertalign_SuperScript : Asc.vertalign_Baseline);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Superscript');
+             }
+         },
+ 
+@@ -1380,7 +1360,6 @@ define([
+                     this.api.put_TextPrBaseline(btn.pressed ? Asc.vertalign_SubScript : Asc.vertalign_Baseline);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Subscript');
+             }
+         },
+ 
+@@ -1389,7 +1368,6 @@ define([
+                 this.api.DecreaseIndent();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Indent');
+         },
+ 
+         onIncOffset: function(btn, e) {
+@@ -1397,7 +1375,6 @@ define([
+                 this.api.IncreaseIndent();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Indent');
+         },
+ 
+         onChangeCase: function(menu, item, e) {
+@@ -1418,7 +1395,6 @@ define([
+                 this.api.put_PrAlign(item.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Horizontal Align');
+         },
+ 
+         onMenuVerticalAlignSelect: function(menu, item) {
+@@ -1433,7 +1409,6 @@ define([
+                 this.api.setVerticalAlign(item.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Vertical Align');
+         },
+ 
+         onMarkers: function(btn, e) {
+@@ -1510,7 +1485,6 @@ define([
+                         callback: _.bind(function(btn) {
+                             if (btn == 'yes') {
+                                 this.api.put_TextPrFontName(record.name);
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                             } else {
+                                 this.toolbar.cmbFontName.setValue(this.api.get_TextProps().get_TextPr().get_FontFamily().get_Name());
+                             }
+@@ -1519,7 +1493,6 @@ define([
+                     });
+                 } else {
+                     this.api.put_TextPrFontName(record.name);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                 }
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -1540,7 +1513,6 @@ define([
+                 this.api.put_TextPrFontSize(record.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onFontSizeChanged: function(before, combo, record, e) {
+@@ -1642,7 +1614,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'List Type');
+         },
+ 
+         onLineSpaceToggle: function(menu, item, state, e) {
+@@ -1652,7 +1623,6 @@ define([
+                     this.api.put_PrLineSpacing(c_paragraphLinerule.LINERULE_AUTO, item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Line Spacing');
+             }
+         },
+ 
+@@ -1709,7 +1679,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Insert Columns');
+         },
+ 
+         onBeforeColumns: function() {
+@@ -1779,13 +1748,10 @@ define([
+                 var value = this.toolbar.mniAlignToSlide.isChecked() ? Asc.c_oAscObjectsAlignType.Slide : Asc.c_oAscObjectsAlignType.Selected;
+                 if (item.value>-1 && item.value < 6) {
+                     this.api.put_ShapesAlign(item.value, value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Shape Align');
+                 } else if (item.value == 6) {
+                     this.api.DistributeHorizontally(value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 } else if (item.value == 7){
+                     this.api.DistributeVertically(value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 }
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+             }
+@@ -1796,27 +1762,21 @@ define([
+                 switch (item.value) {
+                     case 1:
+                         this.api.shapes_bringToFront();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 2:
+                         this.api.shapes_bringToBack();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 3:
+                         this.api.shapes_bringForward();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 4:
+                         this.api.shapes_bringBackward();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Arrange');
+                         break;
+                     case 5:
+                         this.api.groupShapes();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape Group');
+                         break;
+                     case 6:
+                         this.api.unGroupShapes();
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Shape UnGroup');
+                         break;
+                 }
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -1832,7 +1792,6 @@ define([
+         onClickMenuShapesMerge: function (menu, item) {
+             if (item && item.value) {
+                 this.api.asc_mergeSelectedShapes(item.value); 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Shapes Merge'); 
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+         },
+@@ -1887,7 +1846,6 @@ define([
+                 }
+             }
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Hyperlink');
+         },
+ 
+         onTablePickerSelect: function(picker, columns, rows, e) {
+@@ -1897,7 +1855,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Table');
+         },
+ 
+         onInsertTableClick: function(menu, item, e) {
+@@ -1913,7 +1870,6 @@ define([
+                                 me.api.put_Table(value.columns, value.rows);
+                             }
+ 
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Table');
+                         }
+                         Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+                     }
+@@ -1936,7 +1892,6 @@ define([
+                 setTimeout(function() {me.api.asc_addImage();}, 1);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             } else if (opts === 'url') {
+                 (new Common.Views.ImageFromUrlDialog({
+                     handler: function(result, value) {
+@@ -1947,7 +1902,6 @@ define([
+                                     me.toolbar.fireEvent('insertimage', me.toolbar);
+                                     me.api.AddImageUrl([checkUrl]);
+ 
+-                                    Common.component.Analytics.trackEvent('ToolBar', 'Image');
+                                 }
+                             }
+ 
+@@ -1980,7 +1934,6 @@ define([
+             if (data && data._urls && (!data.c || data.c=='add')) {
+                 this.toolbar.fireEvent('insertimage', this.toolbar);
+                 (data._urls.length>0) && this.api.AddImageUrl(data._urls, undefined, data.token);// for loading from storage
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             }
+         },
+ 
+@@ -2035,7 +1988,6 @@ define([
+                 this._addAutoshape(btn.pressed, type);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text');
+         },
+ 
+         onInsertShape: function (type) {
+@@ -2052,7 +2004,6 @@ define([
+                     me.toolbar.btnsInsertText.toggle(false, true);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Shape');
+             }
+         },
+ 
+@@ -2063,7 +2014,6 @@ define([
+             me.api.AddTextArt(data);
+ 
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text Art');
+         },
+ 
+         onEditHeaderClick: function(type, e) {
+@@ -2131,7 +2081,6 @@ define([
+             if (this.api) {
+                 this.api.asc_ChangeColorSchemeByIdx(item.value);
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Color Scheme');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -2161,7 +2110,6 @@ define([
+                     this.api.changeSlideSize(this.currentPageSize.width, this.currentPageSize.height, this.currentPageSize.type, this.currentPageSize.firstNum);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Slide Size');
+             } else {
+                 var win, props,
+                     me = this;
+@@ -2196,7 +2144,6 @@ define([
+                 win.show();
+                 win.setSettings(me.currentPageSize.type, me.currentPageSize.width, me.currentPageSize.height, me.currentPageSize.firstNum);
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Slide Size');
+             }
+         },
+ 
+@@ -2236,7 +2183,6 @@ define([
+                 this.api.ChangeTheme(record.get('themeId'));
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Style');
+         },
+ 
+         _clearBullets: function() {
+@@ -2268,7 +2214,6 @@ define([
+             if (this.api)
+                 this.api.put_TextColor(Common.Utils.ThemeColor.getRgbColor(color));
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text Color');
+         },
+ 
+         onBtnFontColor: function() {
+@@ -2356,13 +2301,11 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnHighlightColor);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Highlight Color');
+         },
+ 
+         onBtnHighlightColor: function(btn) {
+             if (btn.pressed) {
+                 this._setMarkerColor(btn.currentColor);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Highlight Color');
+             }
+             else {
+                 this.api.SetMarkerFormat(false);
+@@ -2437,7 +2380,6 @@ define([
+                             if (e.type !== 'click')
+                                 me.toolbar.btnInsertEquation.menu.hide();
+                             Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnInsertEquation);
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+                         }
+                     });
+                 }
+@@ -2465,7 +2407,6 @@ define([
+         onInsertEquationClick: function() {
+             if (this.api) {
+                 this.api.asc_AddMath();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertEquation);
+         },
+diff --git a/apps/presentationeditor/main/app/controller/Viewport.js b/apps/presentationeditor/main/app/controller/Viewport.js
+index 33f03183..83d5becb 100644
+--- a/apps/presentationeditor/main/app/controller/Viewport.js
++++ b/apps/presentationeditor/main/app/controller/Viewport.js
+@@ -307,7 +307,6 @@ define([
+                     isResized = true;
+                     Common.NotificationCenter.off('window:resize', _onWindowResize);
+                     isCurrent ? me.api.StartDemonstrationFromCurrentSlide('presentation-preview', reporterObject) : me.api.StartDemonstrationFromBeginning('presentation-preview', reporterObject);
+-                    Common.component.Analytics.trackEvent('Viewport', 'Preview');
+                 };
+                 if (!me.viewport.mode.isDesktopApp && !Common.Utils.isIE11 && !presenter && !!document.fullscreenEnabled) {
+                     Common.NotificationCenter.on('window:resize', _onWindowResize);
+diff --git a/apps/presentationeditor/main/app_dev.js b/apps/presentationeditor/main/app_dev.js
+index 8246a556..53ba10ce 100644
+--- a/apps/presentationeditor/main/app_dev.js
++++ b/apps/presentationeditor/main/app_dev.js
+@@ -60,7 +60,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -95,11 +94,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -107,7 +101,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale',
+     'socketio',
+diff --git a/apps/presentationeditor/mobile/src/controller/Error.jsx b/apps/presentationeditor/mobile/src/controller/Error.jsx
+index 2fda3164..ee4d6cd1 100644
+--- a/apps/presentationeditor/mobile/src/controller/Error.jsx
++++ b/apps/presentationeditor/mobile/src/controller/Error.jsx
+@@ -309,8 +309,6 @@ const ErrorController = inject('storeAppOptions','storePresentationInfo')(({stor
+                 }
+             ]
+         }).open();
+-
+-        Common.component.Analytics.trackEvent('Internal Error', id.toString());
+     };
+ 
+     return null
+diff --git a/apps/presentationeditor/mobile/src/controller/Main.jsx b/apps/presentationeditor/mobile/src/controller/Main.jsx
+index 666115b2..e7401a79 100644
+--- a/apps/presentationeditor/mobile/src/controller/Main.jsx
++++ b/apps/presentationeditor/mobile/src/controller/Main.jsx
+@@ -946,7 +946,6 @@ class MainController extends Component {
+ 
+         if (this.api)
+             this.api.asc_Print();
+-        Common.component.Analytics.trackEvent('Print');
+     }
+ 
+     onPrintUrl (url) {
+@@ -990,8 +989,6 @@ class MainController extends Component {
+                 text: [msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)],
+                 closeButton: true
+             }).open();
+-
+-            Common.component.Analytics.trackEvent('External Error');
+         }
+     }
+ 
+diff --git a/apps/presentationeditor/mobile/src/page/app.jsx b/apps/presentationeditor/mobile/src/page/app.jsx
+index 8b72cae7..71cc0540 100644
+--- a/apps/presentationeditor/mobile/src/page/app.jsx
++++ b/apps/presentationeditor/mobile/src/page/app.jsx
+@@ -38,8 +38,6 @@ import React from 'react';
+ import {App,Panel,Views,View,Popup,Page,Navbar,Toolbar,NavRight,Link,Block,BlockTitle,List,ListItem,ListInput,ListButton,BlockFooter} from 'framework7-react';
+ import { f7ready } from 'framework7-react';
+ 
+-import '../../../../common/Analytics.js';
+-
+ import '../../../../common/Gateway.js';
+ import '../../../../common/main/lib/util/utils.js';
+ 
+diff --git a/apps/presentationeditor/mobile/src/store/appOptions.js b/apps/presentationeditor/mobile/src/store/appOptions.js
+index f2675aad..3c1d8eb2 100644
+--- a/apps/presentationeditor/mobile/src/store/appOptions.js
++++ b/apps/presentationeditor/mobile/src/store/appOptions.js
+@@ -131,7 +131,6 @@ export class storeAppOptions {
+         this.sharingSettingsUrl = config.sharingSettingsUrl;
+         this.fileChoiceUrl = config.fileChoiceUrl;
+         this.mergeFolderUrl = config.mergeFolderUrl;
+-        this.canAnalytics = false;
+         this.canRequestClose = config.canRequestClose;
+         this.canCloseEditor = false;
+         
+@@ -167,7 +166,6 @@ export class storeAppOptions {
+         if (params.asc_getRights() !== Asc.c_oRights.Edit)
+             permissions.edit = false;
+         this.review = (permissions.review === undefined) ? (permissions.edit !== false) : permissions.review;
+-        this.canAnalytics = params.asc_getIsAnalyticsEnable();
+         this.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+         this.isLightVersion = params.asc_getIsLight();
+         this.buildVersion = params.asc_getBuildVersion();
+diff --git a/apps/spreadsheeteditor/embed/index.html b/apps/spreadsheeteditor/embed/index.html
+index f17e8311..aa428d06 100644
+--- a/apps/spreadsheeteditor/embed/index.html
++++ b/apps/spreadsheeteditor/embed/index.html
+@@ -251,7 +251,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/dropdown.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/modal.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/tooltip.js"></script>
+diff --git a/apps/spreadsheeteditor/embed/index_loader.html b/apps/spreadsheeteditor/embed/index_loader.html
+index 62449c30..7e5baabb 100644
+--- a/apps/spreadsheeteditor/embed/index_loader.html
++++ b/apps/spreadsheeteditor/embed/index_loader.html
+@@ -338,7 +338,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/util/LanguageInfo.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/LocalStorage.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/utils.js"></script>
+diff --git a/apps/spreadsheeteditor/main/app.js b/apps/spreadsheeteditor/main/app.js
+index bde5490b..8031f687 100644
+--- a/apps/spreadsheeteditor/main/app.js
++++ b/apps/spreadsheeteditor/main/app.js
+@@ -62,7 +62,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -105,11 +104,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -118,7 +112,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale'
+ ], function (Sdk, Backbone, _, Core) {
+diff --git a/apps/spreadsheeteditor/main/app/controller/DocumentHolderExt.js b/apps/spreadsheeteditor/main/app/controller/DocumentHolderExt.js
+index c47dfe56..4c9e55f6 100644
+--- a/apps/spreadsheeteditor/main/app/controller/DocumentHolderExt.js
++++ b/apps/spreadsheeteditor/main/app/controller/DocumentHolderExt.js
+@@ -334,8 +334,7 @@ define([], function () {
+                             }
+                         })).show();
+                     }
+-                } else
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Copy Warning');
++                }
+             }
+             Common.NotificationCenter.trigger('edit:complete', me.documentHolder);
+         };
+@@ -352,7 +351,6 @@ define([], function () {
+                 }
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Insert Entire');
+             }
+         };
+ 
+@@ -361,7 +359,6 @@ define([], function () {
+                 this.api.asc_insertCells(item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Insert Cells');
+             }
+         };
+ 
+@@ -377,7 +374,6 @@ define([], function () {
+                 }
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Delete Entire');
+             }
+         };
+ 
+@@ -386,7 +382,6 @@ define([], function () {
+                 this.api.asc_deleteCells(item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Delete Cells');
+             }
+         };
+ 
+@@ -415,7 +410,6 @@ define([], function () {
+                                     this.api.asc_sortColFilter(item.value, '', undefined, (item.value==Asc.c_oAscSortOptions.ByColorFill) ? this.documentHolder.ssMenu.cellColor : this.documentHolder.ssMenu.fontColor, btn == 'expand');
+                                 }
+                                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                                Common.component.Analytics.trackEvent('DocumentHolder', 'Sort Cells');
+                             }, this)
+                         };
+                         Common.UI.alert(config);
+@@ -430,7 +424,6 @@ define([], function () {
+                             callback: _.bind(function(btn){
+                                 (btn == 'yes') && this.api.asc_sortColFilter(item.value, '', undefined, (item.value==Asc.c_oAscSortOptions.ByColorFill) ? this.documentHolder.ssMenu.cellColor : this.documentHolder.ssMenu.fontColor, false);
+                                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                                Common.component.Analytics.trackEvent('DocumentHolder', 'Sort Cells');
+                             }, this)
+                         };
+                         Common.UI.alert(config);
+@@ -439,7 +432,6 @@ define([], function () {
+                     case Asc.c_oAscSelectionSortExpand.notExpandAndNotShowMessage:
+                         this.api.asc_sortColFilter(item.value, '', undefined, (item.value==Asc.c_oAscSortOptions.ByColorFill) ? this.documentHolder.ssMenu.cellColor : this.documentHolder.ssMenu.fontColor, res === Asc.c_oAscSelectionSortExpand.expandAndNotShowMessage);
+                         Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                        Common.component.Analytics.trackEvent('DocumentHolder', 'Sort Cells');
+                         break;
+                 }
+             }
+@@ -472,7 +464,6 @@ define([], function () {
+                 this.api.asc_applyAutoFilterByType(autoFilterObject);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Filter Cells');
+             }
+         };
+ 
+@@ -867,7 +858,6 @@ define([], function () {
+                     this.api.asc_emptyCells(item.value, item.value == Asc.c_oAscCleanOptions.All && !this.permissions.canDeleteComments);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Clear');
+             }
+         };
+ 
+@@ -876,7 +866,6 @@ define([], function () {
+                 this.api.asc_changeSelectionFormatTable(this.documentHolder.ssMenu.formatTableName, item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Select Table');
+             }
+         };
+ 
+@@ -885,7 +874,6 @@ define([], function () {
+                 this.api.asc_insertCellsInTable(this.documentHolder.ssMenu.formatTableName, item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Insert to Table');
+             }
+         };
+ 
+@@ -894,7 +882,6 @@ define([], function () {
+                 this.api.asc_deleteCellsInTable(this.documentHolder.ssMenu.formatTableName, item.value);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Delete from Table');
+             }
+         };
+ 
+@@ -954,7 +941,6 @@ define([], function () {
+                 });
+             }
+ 
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'Add Hyperlink');
+         };
+ 
+         dh.onDelHyperlink = function(item) {
+@@ -966,7 +952,6 @@ define([], function () {
+                 this.api.asc_removeHyperlink();
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Remove Hyperlink');
+             }
+         };
+ 
+@@ -1040,7 +1025,6 @@ define([], function () {
+             var handlerDlg = function(result, settings) {
+                 if (result == 'ok' && settings) {
+                     me.api.asc_setDefinedNames(settings);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'New Named Range');
+                 }
+                 Common.NotificationCenter.trigger('edit:complete', me.documentHolder);
+             };
+@@ -1061,19 +1045,16 @@ define([], function () {
+                     this.api.asc_setSelectedDrawingObjectLayer(item.value);
+ 
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Arrange');
+                 } else if (item.options.type == 'group') {
+                     this.api[(item.value == 'grouping') ? 'asc_groupGraphicsObjects' : 'asc_unGroupGraphicsObjects']();
+ 
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', (item.value == 'grouping') ? 'Grouping' : 'Ungrouping');
+                 } else if (item.options.type == 'rotate') {
+                     var properties = new Asc.asc_CImgProperty();
+                     properties.asc_putRotAdd((item.value==1 ? 90 : 270) * 3.14159265358979 / 180);
+                     this.api.asc_setGraphicObjectProps(properties);
+ 
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Rotate');
+                 } else if (item.options.type == 'flip') {
+                     var properties = new Asc.asc_CImgProperty();
+                     if (item.value==1)
+@@ -1083,7 +1064,6 @@ define([], function () {
+                     this.api.asc_setGraphicObjectProps(properties);
+ 
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Flip');
+                 }
+             }
+         };
+@@ -1115,15 +1095,12 @@ define([], function () {
+                 if (item.value>-1 && item.value < 6) {
+                     this.api.asc_setSelectedDrawingObjectAlign(item.value);
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Objects Align');
+                 } else if (item.value == 6) {
+                     this.api.asc_DistributeSelectedDrawingObjectHor();
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute');
+                 } else if (item.value == 7){
+                     this.api.asc_DistributeSelectedDrawingObjectVer();
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'Distribute');
+                 }
+             }
+         };
+@@ -1133,7 +1110,6 @@ define([], function () {
+             if (item && item.value) {
+                 me.api.asc_mergeSelectedShapes(item.value);
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Shapes Merge');
+             }
+         };
+ 
+@@ -1152,7 +1128,6 @@ define([], function () {
+                 this.api.asc_setGraphicObjectProps(properties);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Paragraph Vertical Align');
+             }
+         };
+ 
+@@ -1164,7 +1139,6 @@ define([], function () {
+                 this.api.asc_setGraphicObjectProps(properties);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Text Direction');
+             }
+         };
+ 
+@@ -1173,7 +1147,6 @@ define([], function () {
+                 if (item.options.value == -1) {
+                     this.api.asc_setListType(0, item.options.value);
+                     Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                    Common.component.Analytics.trackEvent('DocumentHolder', 'List Type');
+                 } else if (item.options.value == 'settings') {
+                     var me      = this,
+                         props;
+@@ -1243,7 +1216,6 @@ define([], function () {
+                 this.documentHolder.textInShapeMenu.hide();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-            Common.component.Analytics.trackEvent('DocumentHolder', 'List Type');
+         };
+ 
+         dh.onTextAdvanced = function(item) {
+@@ -1257,7 +1229,6 @@ define([], function () {
+                         if (me.api) {
+                             me.api.asc_setGraphicObjectProps(value.paragraphProps);
+ 
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Apply advanced paragraph settings');
+                         }
+                     }
+                     Common.NotificationCenter.trigger('edit:complete', me);
+@@ -1276,7 +1247,6 @@ define([], function () {
+                         if (me.api) {
+                             me.api.asc_setGraphicObjectProps(value.shapeProps);
+ 
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Apply advanced shape settings');
+                         }
+                     }
+                     Common.NotificationCenter.trigger('edit:complete', me);
+@@ -1295,7 +1265,6 @@ define([], function () {
+                         if (me.api) {
+                             me.api.asc_setGraphicObjectProps(value.imageProps);
+ 
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Apply advanced image settings');
+                         }
+                     }
+                     Common.NotificationCenter.trigger('edit:complete', me);
+@@ -1315,7 +1284,6 @@ define([], function () {
+                         if (me.api) {
+                             me.api.asc_setGraphicObjectProps(value.imageProps);
+ 
+-                            Common.component.Analytics.trackEvent('DocumentHolder', 'Apply slicer settings');
+                         }
+                     }
+                     Common.NotificationCenter.trigger('edit:complete', me);
+@@ -4518,7 +4486,6 @@ define([], function () {
+                 this.api.asc_setGraphicObjectProps(properties);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.documentHolder);
+-                Common.component.Analytics.trackEvent('DocumentHolder', 'Set Image Original Size');
+             }
+         };
+ 
+diff --git a/apps/spreadsheeteditor/main/app/controller/LeftMenu.js b/apps/spreadsheeteditor/main/app/controller/LeftMenu.js
+index 2f337d45..b934031d 100644
+--- a/apps/spreadsheeteditor/main/app/controller/LeftMenu.js
++++ b/apps/spreadsheeteditor/main/app/controller/LeftMenu.js
+@@ -621,8 +621,6 @@ define([
+             var recentDocPage = window.open(url);
+             if (recentDocPage)
+                 recentDocPage.focus();
+-
+-            Common.component.Analytics.trackEvent('Open Recent');
+         },
+ 
+         clickToolbarSettings: function(obj) {
+diff --git a/apps/spreadsheeteditor/main/app/controller/Main.js b/apps/spreadsheeteditor/main/app/controller/Main.js
+index e992ed8b..252758ce 100644
+--- a/apps/spreadsheeteditor/main/app/controller/Main.js
++++ b/apps/spreadsheeteditor/main/app/controller/Main.js
+@@ -458,7 +458,6 @@ define([
+                 this.appOptions.location        = (typeof (this.editorConfig.location) == 'string') ? this.editorConfig.location.toLowerCase() : '';
+                 this.appOptions.region          = (typeof (this.editorConfig.region) == 'string') ? this.editorConfig.region.toLowerCase() : this.editorConfig.region;
+                 this.appOptions.canAutosave     = false;
+-                this.appOptions.canAnalytics    = false;
+                 this.appOptions.sharingSettingsUrl = this.editorConfig.sharingSettingsUrl;
+                 this.appOptions.saveAsUrl       = this.editorConfig.saveAsUrl;
+                 this.appOptions.fileChoiceUrl   = this.editorConfig.fileChoiceUrl;
+@@ -1177,9 +1176,6 @@ define([
+                     setTimeout(function() { $(Common.Utils.String.format('.toolbar .lazy-{0}', dummyClass)).remove(); }, 10);
+                 }
+ 
+-                if (me.appOptions.canAnalytics && false)
+-                    Common.component.Analytics.initialize('UA-12442749-13', 'Spreadsheet Editor');
+-
+                 Common.Gateway.on('applyeditrights', _.bind(me.onApplyEditRights, me));
+                 Common.Gateway.on('processrightschange', _.bind(me.onProcessRightsChange, me));
+                 Common.Gateway.on('processmouse', _.bind(me.onProcessMouse, me));
+@@ -1442,7 +1438,6 @@ define([
+ 
+                     this.appOptions.permissionsLicense = licType;
+                     this.appOptions.canAutosave = true;
+-                    this.appOptions.canAnalytics = params.asc_getIsAnalyticsEnable();
+ 
+                     this.appOptions.isOffline      = this.api.asc_isOffline();
+                     this.appOptions.isCrypted      = this.api.asc_isCrypto();
+@@ -1793,8 +1788,6 @@ define([
+                 if (msg && msg.msg) {
+                     msg.msg = (msg.msg).toString();
+                     this.showTips([msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)], options);
+-
+-                    Common.component.Analytics.trackEvent('External Error');
+                 }
+             },
+ 
+@@ -2383,8 +2376,6 @@ define([
+ 
+                 if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                     setTimeout(function() {Common.UI.alert(config).$window.attr('data-value', id);}, 1);
+-
+-                (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
+             },
+ 
+             onCoAuthoringDisconnect: function() {
+@@ -3423,7 +3414,6 @@ define([
+                         var opts = new Asc.asc_CDownloadOptions();
+                         opts.asc_setAdvancedOptions(printopt);
+                         me.api.asc_Print(opts);
+-                        Common.component.Analytics.trackEvent('Print');
+                     };
+ 
+                 if (value) {
+diff --git a/apps/spreadsheeteditor/main/app/controller/Print.js b/apps/spreadsheeteditor/main/app/controller/Print.js
+index 3e9f2df3..02ee34f4 100644
+--- a/apps/spreadsheeteditor/main/app/controller/Print.js
++++ b/apps/spreadsheeteditor/main/app/controller/Print.js
+@@ -523,8 +523,6 @@ define([
+                     this.downloadWopiPath && opts.asc_setWopiSaveAsPath(this.downloadWopiPath);
+                     this.api.asc_DownloadAs(opts);
+                 }
+-                Common.component.Analytics.trackEvent((this.printSettingsDlg.type=='print') ? 'Print' : 'DownloadAs');
+-                Common.component.Analytics.trackEvent('ToolBar', (this.printSettingsDlg.type=='print') ? 'Print' : 'DownloadAs');
+                 Common.NotificationCenter.trigger('edit:complete', view);
+             } else {
+                 this.asUrl && Common.NotificationCenter.trigger('download:cancel');
+diff --git a/apps/spreadsheeteditor/main/app/controller/Toolbar.js b/apps/spreadsheeteditor/main/app/controller/Toolbar.js
+index 147cb9dc..d544a6c7 100644
+--- a/apps/spreadsheeteditor/main/app/controller/Toolbar.js
++++ b/apps/spreadsheeteditor/main/app/controller/Toolbar.js
+@@ -594,14 +594,12 @@ define([
+         //     this.api.asc_openNewDocument();
+         //
+         //     Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-        //     Common.component.Analytics.trackEvent('ToolBar', 'New Document');
+         // },
+         //
+         // onOpenDocument: function(btn, e) {
+         //     this.api.asc_loadDocumentFromDisk();
+         //
+         //     Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-        //     Common.component.Analytics.trackEvent('ToolBar', 'Open Document');
+         // },
+ 
+         onApiChangeFont: function(font) {
+@@ -648,8 +646,6 @@ define([
+ 
+ //            Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+ 
+-            Common.component.Analytics.trackEvent('Save');
+-            Common.component.Analytics.trackEvent('ToolBar', 'Save');
+         },
+ 
+         onBtnChangeState: function(prop) {
+@@ -664,7 +660,6 @@ define([
+                 this.api.asc_Undo();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Undo');
+         },
+ 
+         onRedo: function(btn, e) {
+@@ -672,7 +667,6 @@ define([
+                 this.api.asc_Redo();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Redo');
+         },
+ 
+         onCopyPaste: function(type, e) {
+@@ -689,8 +683,7 @@ define([
+                             }
+                         })).show();
+                     }
+-                } else
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Copy Warning');
++                }
+             }
+             Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+         },
+@@ -700,7 +693,6 @@ define([
+                 this.api.asc_EditSelectAll();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Select All');
+         },
+ 
+         onReplace: function(e) {
+@@ -712,7 +704,6 @@ define([
+                 this.api.asc_increaseFontSize();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onDecreaseFontSize: function(e) {
+@@ -720,7 +711,6 @@ define([
+                 this.api.asc_decreaseFontSize();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onChangeCase: function(menu, item, e) {
+@@ -735,7 +725,6 @@ define([
+                 this.api.asc_setCellBold(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Bold');
+         },
+ 
+         onItalic: function(btn, e) {
+@@ -744,7 +733,6 @@ define([
+                 this.api.asc_setCellItalic(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Italic');
+         },
+ 
+         onUnderline: function(btn, e) {
+@@ -753,7 +741,6 @@ define([
+                 this.api.asc_setCellUnderline(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Underline');
+         },
+ 
+         onStrikeout: function(btn, e) {
+@@ -762,7 +749,6 @@ define([
+                 this.api.asc_setCellStrikeout(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Strikeout');
+         },
+ 
+         onSubscriptMenu: function(menu, item) {
+@@ -781,7 +767,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', (item.value == 'sub') ? 'Subscript' : 'Superscript');
+         },
+ 
+         onSubscript: function(btn, e) {
+@@ -796,7 +781,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', (subscript) ? 'Subscript' : 'Superscript');
+         },
+ 
+         onTextColor: function() {
+@@ -818,7 +802,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text Color');
+         },
+ 
+         onBackColorSelect: function(btn, color) {
+@@ -831,7 +814,6 @@ define([
+                 this.api.asc_setCellBackgroundColor(color == 'transparent' ? null : Common.Utils.ThemeColor.getRgbColor(color));
+             }
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'Background Color');
+         },
+ 
+         onFormatCellFill: function(picker, color) {
+@@ -856,7 +838,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text Color');
+         },
+ 
+         onBorders: function(btn) {
+@@ -911,7 +892,6 @@ define([
+                 me.api.asc_setCellBorders(new_borders);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Borders');
+             } else if (item.value==='options')
+                 this.getApplication().getController('RightMenu').onRightMenuOpen(Common.Utils.documentSettingsType.Cell);
+         },
+@@ -921,7 +901,6 @@ define([
+                 this.toolbar.btnBorders.options.borderswidth = item.value;
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Border Width');
+             }
+         },
+ 
+@@ -934,7 +913,6 @@ define([
+             clr_item.hasClass('selected') && clr_item.removeClass('selected');
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Border Color');
+         },
+ 
+         onAutoBorderColor: function(e) {
+@@ -949,7 +927,6 @@ define([
+             !clr_item.hasClass('selected') && clr_item.addClass('selected');
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Border Color');
+         },
+ 
+         onHorizontalAlign: function(type, btn, e) {
+@@ -960,7 +937,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Horizontal align');
+         },
+ 
+         onVerticalAlign: function(type, btn, e) {
+@@ -970,7 +946,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Vertical align');
+         },
+ 
+         onMergeCellsMenu: function(menu, item) {
+@@ -980,7 +955,6 @@ define([
+                 me._state.merge = undefined;
+                 me.api.asc_mergeCells(how);
+                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Merge');
+             }
+ 
+             if (me.api) {
+@@ -996,7 +970,6 @@ define([
+                             } else {
+                                 me.toolbar.btnMerge.toggle(false, true);
+                                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Merge');
+                             }
+                         }
+                     });
+@@ -1006,7 +979,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Merge cells');
+         },
+ 
+         onTextDirClick: function(menu, item) {
+@@ -1034,7 +1006,6 @@ define([
+                 this.api.asc_setCellTextWrap(btn.pressed);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Wrap');
+         },
+ 
+         onTextOrientationMenu: function(menu, item) {
+@@ -1058,14 +1029,12 @@ define([
+                     this.api.asc_setCellAngle(angle);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text orientation');
+         },
+ 
+         onBtnInsertTableClick: function(btn, e) {
+             if (this.api)
+                 this._setTableFormat(this.api.asc_getDefaultTableStyle());
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Table');
+         },
+ 
+         onInsertImageMenu: function(menu, item, e) {
+@@ -1077,7 +1046,6 @@ define([
+                     setTimeout(function() {me.api.asc_addImage();}, 1);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             } else if (item.value === 'url') {
+                 (new Common.Views.ImageFromUrlDialog({
+                     handler: function(result, value) {
+@@ -1088,7 +1056,6 @@ define([
+                                     me.toolbar.fireEvent('insertimage', me.toolbar);
+                                     me.api.asc_addImageDrawingObject([checkUrl]);
+ 
+-                                    Common.component.Analytics.trackEvent('ToolBar', 'Image');
+                                 }
+                             }
+ 
+@@ -1121,7 +1088,6 @@ define([
+             if (data && data._urls && (!data.c || data.c=='add')) {
+                 this.toolbar.fireEvent('insertimage', this.toolbar);
+                 (data._urls.length>0) && this.api.asc_addImageDrawingObject(data._urls, undefined, data.token);// for loading from storage
+-                Common.component.Analytics.trackEvent('ToolBar', 'Image');
+             }
+         },
+ 
+@@ -1189,7 +1155,6 @@ define([
+                 });
+             }
+ 
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Hyperlink');
+         },
+ 
+         onEditChartData: function(btn) {
+@@ -1322,7 +1287,6 @@ define([
+                     this.toolbar.btnInsertShape.toggle(false, true);
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertTextArt);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Text Art');
+             }
+         },
+ 
+@@ -1361,7 +1325,6 @@ define([
+                 this.toolbar.btnInsertShape.toggle(false, true);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertShape);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Add Text');
+         },
+ 
+         onInsertShapeHide: function(btn, e) {
+@@ -1471,7 +1434,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Auto filter');
+         },
+ 
+         onClearFilter: function(btn) {
+@@ -1479,7 +1441,6 @@ define([
+                 this.api.asc_clearFilter();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Clear filter');
+         },
+ 
+         onNumberFormat: function(btn) {
+@@ -1487,7 +1448,6 @@ define([
+                 this.api.asc_setCellStyle(btn.options.styleName);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Number Format');
+         },
+ 
+         onNumberFormatMenu: function(menu, item) {
+@@ -1519,7 +1479,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Number Format');
+         },
+ 
+         onNumberFormatSelect: function(combo, record) {
+@@ -1530,7 +1489,6 @@ define([
+                 this.onCustomNumberFormat();
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Number Format');
+         },
+ 
+         onCustomNumberFormat: function(format, formatInfo) {
+@@ -1549,7 +1507,6 @@ define([
+                 props   : {format: format ? format : me._state.numformat, formatInfo: formatInfo ? formatInfo : me._state.numformatinfo, langId: value}
+             })).show();
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Number Format');
+         },
+ 
+         onNumberFormatOpenBefore: function(combo) {
+@@ -1583,7 +1540,6 @@ define([
+                 this.api.asc_decreaseCellDigitNumbers();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Decrement');
+         },
+ 
+         onIncrement: function(btn) {
+@@ -1591,7 +1547,6 @@ define([
+                 this.api.asc_increaseCellDigitNumbers();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Increment');
+         },
+ 
+         onInsertFormulaMenu: function(menu, item, e) {
+@@ -1606,7 +1561,6 @@ define([
+                     this.toolbar.fireEvent('function:apply', [{name: this.api.asc_getFormulaLocaleName(item.value), origin: item.value}, true]);
+ 
+                     Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Insert formula');
+                 }
+             }
+         },
+@@ -1619,13 +1573,11 @@ define([
+                         handler: function(result, settings) {
+                             if (result == 'ok' && settings) {
+                                 me.api.asc_insertInCell(settings.asc_getName(true), (settings.asc_getType()===Asc.c_oAscDefNameType.table) ? Asc.c_oAscPopUpSelectorType.Table : Asc.c_oAscPopUpSelectorType.Range, false);
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Paste Named Range');
+                             }
+                             Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+                         },
+                         ranges: me.api.asc_getDefinedNames(Asc.c_oAscGetDefinedNamesList.WorksheetWorkbook) // names only for current sheet and workbook
+                     })).show();
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Paste Named Range');
+                 } else {
+                     var wc = me.api.asc_getWorksheetsCount(),
+                         i = -1,
+@@ -1647,7 +1599,6 @@ define([
+                             handler: function(result, settings) {
+                                 if (result == 'ok' && settings) {
+                                     me.api.asc_setDefinedNames(settings);
+-                                    Common.component.Analytics.trackEvent('ToolBar', 'New Named Range');
+                                 }
+                                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+                             },
+@@ -1668,7 +1619,6 @@ define([
+                         (new SSE.Views.NameManagerDlg({
+                             api: me.api,
+                             handler: function(result) {
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Name Manager');
+                                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+                             },
+                             locked: me._state.namedrange_locked,
+@@ -1711,7 +1661,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Clear');
+         },
+ 
+         onCopyStyleToggle: function(btn, state, e) {
+@@ -1726,7 +1675,6 @@ define([
+                 this.api.asc_insertCells(item.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Cell insert');
+         },
+ 
+         onCellDeleteMenu: function(menu, item, e) {
+@@ -1734,7 +1682,6 @@ define([
+                 this.api.asc_deleteCells(item.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Cell delete');
+         },
+ 
+         onShowBeforeCellFormat: function(cmp, item, e) {
+@@ -1879,7 +1826,6 @@ define([
+             if (this.api) {
+                 this.api.asc_ChangeColorSchemeByIdx(item.value);
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Color Scheme');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -1909,7 +1855,6 @@ define([
+                         callback: _.bind(function(btn) {
+                             if (btn == 'yes') {
+                                 this.api.asc_setCellFontName(record.name);
+-                                Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                             } else {
+                                 this.toolbar.cmbFontName.setValue(this.api.asc_getCellInfo().asc_getXfs().asc_getFontName());
+                             }
+@@ -1918,7 +1863,6 @@ define([
+                     });
+                 } else {
+                     this.api.asc_setCellFontName(record.name);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Font Name');
+                 }
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+@@ -1939,7 +1883,6 @@ define([
+                 this.api.asc_setCellFontSize(record.value);
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, {restorefocus:true});
+-            Common.component.Analytics.trackEvent('ToolBar', 'Font Size');
+         },
+ 
+         onFontSizeChanged: function(before, combo, record, e) {
+@@ -1992,7 +1935,6 @@ define([
+                 this.api.asc_setCellStyle(record.get('name'));
+ 
+                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Style');
+             }
+         },
+ 
+@@ -2377,7 +2319,6 @@ define([
+                         me._setTableFormat(record ? record.get('name') : me.api.asc_getDefaultTableStyle());
+ 
+                         Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+-                        Common.component.Analytics.trackEvent('ToolBar', 'Table Templates');
+                     }
+                 });
+ 
+@@ -4179,7 +4120,6 @@ define([
+                     if (e.type !== 'click')
+                         me.toolbar.btnInsertShape.menu.hide();
+                     Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnInsertShape);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Add Shape');
+                 }
+             });
+         },
+@@ -4215,7 +4155,6 @@ define([
+                             if (e.type !== 'click')
+                                 me.toolbar.btnInsertEquation.menu.hide();
+                             Common.NotificationCenter.trigger('edit:complete', me.toolbar, me.toolbar.btnInsertEquation);
+-                            Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+                         }
+                     });
+                 }
+@@ -4243,7 +4182,6 @@ define([
+         onInsertEquationClick: function() {
+             if (this.api) {
+                 this.api.asc_AddMath();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Add Equation');
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnInsertEquation);
+         },
+@@ -4937,7 +4875,6 @@ define([
+             if (this.api && state) {
+                 this._state.pgsize = [0, 0];
+                 this.api.asc_changeDocSize(item.value[0], item.value[1], this.api.asc_getActiveWorksheetIndex());
+-                Common.component.Analytics.trackEvent('ToolBar', 'Page Size');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -4977,7 +4914,6 @@ define([
+                     win.setSettings(me.api.asc_getPageOptions(me.api.asc_getActiveWorksheetIndex()));
+                 }
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Page Margins');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -4990,14 +4926,12 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Page Orientation');
+         },
+ 
+         onImgGroupSelect: function(menu, item) {
+             if (this.api)
+                 this.api[(item.value == 'grouping') ? 'asc_groupGraphicsObjects' : 'asc_unGroupGraphicsObjects']();
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Objects Group');
+         },
+ 
+         onImgArrangeSelect: function(menu, item) {
+@@ -5010,20 +4944,16 @@ define([
+                     this.api.asc_setSelectedDrawingObjectLayer(item.value);
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Objects Arrange');
+         },
+ 
+         onImgAlignSelect: function(menu, item) {
+             if (this.api) {
+                 if (item.value>-1 && item.value < 6) {
+                     this.api.asc_setSelectedDrawingObjectAlign(item.value);
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Objects Align');
+                 } else if (item.value == 6) {
+                     this.api.asc_DistributeSelectedDrawingObjectHor();
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 } else if (item.value == 7){
+                     this.api.asc_DistributeSelectedDrawingObjectVer();
+-                    Common.component.Analytics.trackEvent('ToolBar', 'Distribute');
+                 }
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -5038,7 +4968,6 @@ define([
+         onClickMenuShapesMerge: function (menu, item) {
+             if (item && item.value) {
+                 this.api.asc_mergeSelectedShapes(item.value); 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Shapes Merge'); 
+             }
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+         },
+@@ -5046,7 +4975,6 @@ define([
+         onPrintAreaClick: function(menu, item) {
+             if (this.api) {
+                 this.api.asc_ChangePrintArea(item.value);
+-                Common.component.Analytics.trackEvent('ToolBar', 'Print Area');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -5065,7 +4993,6 @@ define([
+                     this.api.asc_RemovePageBreak();
+                 else if (item.value==='reset')
+                     this.api.asc_ResetAllPageBreaks();
+-                Common.component.Analytics.trackEvent('ToolBar', 'Page Break');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -5192,7 +5119,6 @@ define([
+                 });
+                 win.show();
+ 
+-                Common.component.Analytics.trackEvent('ToolBar', 'Print Titles');
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+@@ -5297,7 +5223,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Text Formatting');
+         },
+ 
+         onHorizontalAlignMenu: function(menu, item) {
+@@ -5308,7 +5233,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Horizontal align');
+         },
+ 
+         onVerticalAlignMenu: function(menu, item) {
+@@ -5318,7 +5242,6 @@ define([
+             }
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Vertical align');
+         },
+ 
+         mouseenterSmartArt: function (groupName) {
+diff --git a/apps/spreadsheeteditor/main/app_dev.js b/apps/spreadsheeteditor/main/app_dev.js
+index 911b5ebd..12be2f2e 100644
+--- a/apps/spreadsheeteditor/main/app_dev.js
++++ b/apps/spreadsheeteditor/main/app_dev.js
+@@ -60,7 +60,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -95,11 +94,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -107,7 +101,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale',
+ 	'socketio',
+diff --git a/apps/spreadsheeteditor/mobile/src/controller/Error.jsx b/apps/spreadsheeteditor/mobile/src/controller/Error.jsx
+index c066886f..24668c98 100644
+--- a/apps/spreadsheeteditor/mobile/src/controller/Error.jsx
++++ b/apps/spreadsheeteditor/mobile/src/controller/Error.jsx
+@@ -615,8 +615,6 @@ const ErrorController = inject('storeAppOptions','storeSpreadsheetInfo')(({store
+                 }
+             ]
+         }).open();
+-
+-        Common.component.Analytics.trackEvent('Internal Error', id.toString());
+     };
+ 
+     return null
+diff --git a/apps/spreadsheeteditor/mobile/src/controller/Main.jsx b/apps/spreadsheeteditor/mobile/src/controller/Main.jsx
+index 76835ae7..689d1776 100644
+--- a/apps/spreadsheeteditor/mobile/src/controller/Main.jsx
++++ b/apps/spreadsheeteditor/mobile/src/controller/Main.jsx
+@@ -780,10 +780,6 @@ class MainController extends Component {
+             }
+         }
+ 
+-        if (appOptions.canAnalytics && false) {
+-            Common.component.Analytics.initialize('UA-12442749-13', 'Spreadsheet Editor');
+-        }
+-
+         Common.Gateway.on('processrightschange',    this.onProcessRightsChange.bind(this));
+         Common.Gateway.on('downloadas',             this.onDownloadAs.bind(this));
+         Common.Gateway.on('requestclose',           this.onRequestClose.bind(this));
+@@ -1001,8 +997,6 @@ class MainController extends Component {
+                 text: [msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)],
+                 closeButton: true
+             }).open();
+-
+-            Common.component.Analytics.trackEvent('External Error');
+         }
+     }
+ 
+@@ -1264,7 +1258,6 @@ class MainController extends Component {
+ 
+         if (this.api)
+             this.api.asc_Print();
+-        Common.component.Analytics.trackEvent('Print');
+     }
+ 
+     onProcessRightsChange (data) {
+diff --git a/apps/spreadsheeteditor/mobile/src/page/app.jsx b/apps/spreadsheeteditor/mobile/src/page/app.jsx
+index f29d7b9e..b74ede1a 100644
+--- a/apps/spreadsheeteditor/mobile/src/page/app.jsx
++++ b/apps/spreadsheeteditor/mobile/src/page/app.jsx
+@@ -38,8 +38,6 @@ import React from 'react';
+ import {App,Views,View,Navbar,NavLeft,NavRight,Link} from 'framework7-react';
+ import { f7ready } from 'framework7-react';
+ 
+-import '../../../../common/Analytics.js';
+-
+ import '../../../../common/Gateway.js';
+ 
+ import routes from '../router/routes.js';
+diff --git a/apps/spreadsheeteditor/mobile/src/store/appOptions.js b/apps/spreadsheeteditor/mobile/src/store/appOptions.js
+index a2eaf07b..6c9c222f 100644
+--- a/apps/spreadsheeteditor/mobile/src/store/appOptions.js
++++ b/apps/spreadsheeteditor/mobile/src/store/appOptions.js
+@@ -139,7 +139,6 @@ export class storeAppOptions {
+         this.isEditDiagram = config.mode == 'editdiagram';
+         this.isEditMailMerge = config.mode == 'editmerge';
+         this.mergeFolderUrl = config.mergeFolderUrl;
+-        this.canAnalytics = false;
+         this.canRequestClose = config.canRequestClose;
+         this.canCloseEditor = false;
+         
+@@ -178,7 +177,6 @@ export class storeAppOptions {
+         this.canBrandingExt = params.asc_getCanBranding() && (typeof this.customization == 'object' || this.config.plugins);
+         this.canModifyFilter = permissions.modifyFilter !== false;
+         this.canAutosave = true;
+-        this.canAnalytics = params.asc_getIsAnalyticsEnable();
+         this.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+         this.isLightVersion = params.asc_getIsLight();
+         this.buildVersion = params.asc_getBuildVersion();
+diff --git a/apps/visioeditor/embed/index.html b/apps/visioeditor/embed/index.html
+index bb1da9b5..9b7e5c24 100644
+--- a/apps/visioeditor/embed/index.html
++++ b/apps/visioeditor/embed/index.html
+@@ -253,7 +253,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/dropdown.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/modal.js"></script>
+       <script type="text/javascript" src="../../common/main/lib/mods/tooltip.js"></script>
+diff --git a/apps/visioeditor/embed/index_loader.html b/apps/visioeditor/embed/index_loader.html
+index a370c7f7..1c6df080 100644
+--- a/apps/visioeditor/embed/index_loader.html
++++ b/apps/visioeditor/embed/index_loader.html
+@@ -336,7 +336,6 @@
+       <!--application-->
+       <script type="text/javascript" src="../../common/locale.js"></script>
+       <script type="text/javascript" src="../../common/Gateway.js"></script>
+-      <script type="text/javascript" src="../../common/Analytics.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/LocalStorage.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/utils.js"></script>
+       <script type="text/javascript" src="../../common/embed/lib/util/htmlutils.js"></script>
+diff --git a/apps/visioeditor/embed/js/ApplicationController.js b/apps/visioeditor/embed/js/ApplicationController.js
+index 16969bce..08860515 100644
+--- a/apps/visioeditor/embed/js/ApplicationController.js
++++ b/apps/visioeditor/embed/js/ApplicationController.js
+@@ -156,8 +156,6 @@ VE.ApplicationController = new(function(){
+                 api.asc_setDocInfo(docInfo);
+                 api.asc_getEditorPermissions();
+                 api.asc_enableKeyEvents(true);
+-
+-                Common.Analytics.trackEvent('Load', 'Start');
+             }
+ 
+             embedConfig.docTitle = docConfig.title;
+@@ -507,14 +505,11 @@ VE.ApplicationController = new(function(){
+                 if ( !!embedConfig.saveUrl && permissions.download !== false){
+                     common.utils.openLink(embedConfig.saveUrl);
+                 }
+-
+-                Common.Analytics.trackEvent('Save');
+             });
+ 
+         VE.ApplicationView.tools.get('#idt-print')
+             .on('click', function(){
+                 api.asc_Print(new Asc.asc_CDownloadOptions(null, $.browser.chrome || $.browser.safari || $.browser.opera || $.browser.mozilla && $.browser.versionNumber>86));
+-                Common.Analytics.trackEvent('Print');
+             });
+ 
+         VE.ApplicationView.tools.get('#idt-close')
+@@ -600,7 +595,6 @@ VE.ApplicationController = new(function(){
+         });
+ 
+         Common.Gateway.documentReady();
+-        Common.Analytics.trackEvent('Load', 'Complete');
+         requireUserAction = false;
+         onPagesChanged();
+         setupScrollButtons();
+@@ -817,8 +811,6 @@ VE.ApplicationController = new(function(){
+         } else {
+             Common.Gateway.reportWarning(id, message);
+         }
+-
+-        Common.Analytics.trackEvent('Internal Error', id.toString());
+     }
+ 
+     function onExternalMessage(error) {
+@@ -827,8 +819,6 @@ VE.ApplicationController = new(function(){
+             $('#id-error-mask-title').text(me.criticalErrorTitle);
+             $('#id-error-mask-text').text(error.msg);
+             $('#id-error-mask').css('display', 'block');
+-
+-            Common.Analytics.trackEvent('External Error');
+         }
+     }
+ 
+diff --git a/apps/visioeditor/main/app.js b/apps/visioeditor/main/app.js
+index f8db93e0..5834c16f 100644
+--- a/apps/visioeditor/main/app.js
++++ b/apps/visioeditor/main/app.js
+@@ -62,7 +62,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -106,11 +105,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -119,7 +113,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale'
+ ], function (Sdk, Backbone, _, Core) {
+diff --git a/apps/visioeditor/main/app/controller/LeftMenu.js b/apps/visioeditor/main/app/controller/LeftMenu.js
+index c90eb18e..b71442c8 100644
+--- a/apps/visioeditor/main/app/controller/LeftMenu.js
++++ b/apps/visioeditor/main/app/controller/LeftMenu.js
+@@ -370,8 +370,6 @@ define([
+             var recentDocPage = window.open(url);
+             if (recentDocPage)
+                 recentDocPage.focus();
+-
+-            Common.component.Analytics.trackEvent('Open Recent');
+         },
+ 
+         clickToolbarSettings: function(obj) {
+diff --git a/apps/visioeditor/main/app/controller/Main.js b/apps/visioeditor/main/app/controller/Main.js
+index e6accaac..b7e89e9a 100644
+--- a/apps/visioeditor/main/app/controller/Main.js
++++ b/apps/visioeditor/main/app/controller/Main.js
+@@ -361,7 +361,6 @@ define([
+                 this.appOptions.sharingSettingsUrl = this.editorConfig.sharingSettingsUrl;
+                 this.appOptions.fileChoiceUrl   = this.editorConfig.fileChoiceUrl;
+                 this.appOptions.saveAsUrl       = this.editorConfig.saveAsUrl;
+-                this.appOptions.canAnalytics    = false;
+                 this.appOptions.canPlugins      = false;
+                 this.appOptions.canMakeActionLink = false;//this.editorConfig.canMakeActionLink;
+                 this.appOptions.canRequestUsers = this.editorConfig.canRequestUsers;
+@@ -988,9 +987,6 @@ define([
+                 $('.toolbar').prepend(Common.Utils.String.format('<div class="lazy-{0} x-huge"><div class="toolbar__icon" style="position: absolute; width: 1px; height: 1px;"></div>', dummyClass));
+                 setTimeout(function() { $(Common.Utils.String.format('.toolbar .lazy-{0}', dummyClass)).remove(); }, 10);
+ 
+-                if (this.appOptions.canAnalytics && false)
+-                    Common.component.Analytics.initialize('UA-12442749-13', 'Visio Editor');
+-
+                 Common.Gateway.on('applyeditrights',        _.bind(me.onApplyEditRights, me));
+                 Common.Gateway.on('processrightschange',    _.bind(me.onProcessRightsChange, me));
+                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
+@@ -1156,7 +1152,6 @@ define([
+                                                 // (this.editorConfig.canRequestEditRights || this.editorConfig.mode !== 'view'); // if mode=="view" -> canRequestEditRights must be defined
+                 this.appOptions.isEdit         = this.appOptions.canLicense && this.appOptions.canEdit && this.editorConfig.mode !== 'view';
+                 this.appOptions.canDownload    = this.permissions.download !== false;
+-                this.appOptions.canAnalytics   = params.asc_getIsAnalyticsEnable();
+                 this.appOptions.canComments    = false;//this.appOptions.canLicense && (this.permissions.comment===undefined ? this.appOptions.isEdit : this.permissions.comment) && (this.editorConfig.mode !== 'view');
+                 this.appOptions.canComments    = false;//this.appOptions.canComments && !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.comments===false);
+                 this.appOptions.canViewComments = false;//this.appOptions.canComments || !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.comments===false);
+@@ -1340,8 +1335,6 @@ define([
+                 if (msg && msg.msg) {
+                     msg.msg = (msg.msg).toString();
+                     this.showTips([msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)], options);
+-
+-                    Common.component.Analytics.trackEvent('External Error');
+                 }
+             },
+ 
+@@ -1597,8 +1590,6 @@ define([
+ 
+                 if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                     Common.UI.alert(config).$window.attr('data-value', id);
+-
+-                (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
+             },
+ 
+             onCoAuthoringDisconnect: function() {
+@@ -1875,7 +1866,6 @@ define([
+             onPrint: function() {
+                 if (!this.appOptions.canPrint || Common.Utils.ModalWindow.isVisible()) return;
+                 Common.NotificationCenter.trigger('file:print');
+-                Common.component.Analytics.trackEvent('Print');
+             },
+ 
+             onPrintUrl: function(url) {
+@@ -1918,7 +1908,6 @@ define([
+                         var opts = new Asc.asc_CDownloadOptions();
+                         opts.asc_setAdvancedOptions(printopt);
+                         me.api.asc_Print(opts);
+-                        Common.component.Analytics.trackEvent('Print');
+                     };
+ 
+                 if (value) {
+diff --git a/apps/visioeditor/main/app/controller/Toolbar.js b/apps/visioeditor/main/app/controller/Toolbar.js
+index 9a4bed5c..44e97a89 100644
+--- a/apps/visioeditor/main/app/controller/Toolbar.js
++++ b/apps/visioeditor/main/app/controller/Toolbar.js
+@@ -209,7 +209,6 @@ define([
+                 this.api.OpenNewDocument();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'New Document');
+         },
+ 
+         onOpenDocument: function(btn, e) {
+@@ -217,7 +216,6 @@ define([
+                 this.api.LoadDocumentFromDisk();
+ 
+             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+-            Common.component.Analytics.trackEvent('ToolBar', 'Open Document');
+         },
+ 
+         onDownloadUrl: function(url, fileType) {
+diff --git a/apps/visioeditor/main/app_dev.js b/apps/visioeditor/main/app_dev.js
+index 78d5e78c..4a998126 100644
+--- a/apps/visioeditor/main/app_dev.js
++++ b/apps/visioeditor/main/app_dev.js
+@@ -60,7 +60,6 @@ require.config({
+         keymaster       : 'common/main/lib/core/keymaster',
+         tip             : 'common/main/lib/util/Tip',
+         localstorage    : 'common/main/lib/util/LocalStorage',
+-        analytics       : 'common/Analytics',
+         gateway         : 'common/Gateway',
+         locale          : 'common/locale',
+         irregularstack  : 'common/IrregularStack'
+@@ -96,11 +95,6 @@ require.config({
+                 'jquery'
+             ]
+         },
+-        analytics: {
+-            deps: [
+-                'jquery'
+-            ]
+-        }
+     }
+ });
+ 
+@@ -108,7 +102,6 @@ require([
+     'backbone',
+     'underscore',
+     'core',
+-    'analytics',
+     'gateway',
+     'locale',
+     'socketio',
+diff --git a/apps/visioeditor/mobile/src/controller/Error.jsx b/apps/visioeditor/mobile/src/controller/Error.jsx
+index bcf6d378..e33661df 100644
+--- a/apps/visioeditor/mobile/src/controller/Error.jsx
++++ b/apps/visioeditor/mobile/src/controller/Error.jsx
+@@ -297,8 +297,6 @@ const ErrorController = inject('storeAppOptions','storeVisioInfo')(({storeAppOpt
+                 }
+             ]
+         }).open();
+-
+-        Common.component.Analytics.trackEvent('Internal Error', id.toString());
+     };
+ 
+     return null
+diff --git a/apps/visioeditor/mobile/src/controller/Main.jsx b/apps/visioeditor/mobile/src/controller/Main.jsx
+index 3cb52201..8d4897d7 100644
+--- a/apps/visioeditor/mobile/src/controller/Main.jsx
++++ b/apps/visioeditor/mobile/src/controller/Main.jsx
+@@ -675,7 +675,6 @@ class MainController extends Component {
+ 
+         if (this.api)
+             this.api.asc_Print();
+-        Common.component.Analytics.trackEvent('Print');
+     }
+ 
+     onPrintUrl (url) {
+@@ -719,8 +718,6 @@ class MainController extends Component {
+                 text: [msg.msg.charAt(0).toUpperCase() + msg.msg.substring(1)],
+                 closeButton: true
+             }).open();
+-
+-            Common.component.Analytics.trackEvent('External Error');
+         }
+     }
+ 
+diff --git a/apps/visioeditor/mobile/src/page/app.jsx b/apps/visioeditor/mobile/src/page/app.jsx
+index 854c9a02..a6ba909c 100644
+--- a/apps/visioeditor/mobile/src/page/app.jsx
++++ b/apps/visioeditor/mobile/src/page/app.jsx
+@@ -38,8 +38,6 @@ import React from 'react';
+ import {App,Panel,Views,View,Popup,Page,Navbar,Toolbar,NavRight,Link,Block,BlockTitle,List,ListItem,ListInput,ListButton,BlockFooter} from 'framework7-react';
+ import { f7ready } from 'framework7-react';
+ 
+-import '../../../../common/Analytics.js';
+-
+ import '../../../../common/Gateway.js';
+ import '../../../../common/main/lib/util/utils.js';
+ 
+diff --git a/apps/visioeditor/mobile/src/store/appOptions.js b/apps/visioeditor/mobile/src/store/appOptions.js
+index 546c12fd..39bc051c 100644
+--- a/apps/visioeditor/mobile/src/store/appOptions.js
++++ b/apps/visioeditor/mobile/src/store/appOptions.js
+@@ -99,7 +99,6 @@ export class storeAppOptions {
+         this.sharingSettingsUrl = config.sharingSettingsUrl;
+         this.fileChoiceUrl = config.fileChoiceUrl;
+         this.mergeFolderUrl = config.mergeFolderUrl;
+-        this.canAnalytics = false;
+         this.canRequestClose = config.canRequestClose;
+         this.canCloseEditor = false;
+         
+@@ -135,7 +134,6 @@ export class storeAppOptions {
+         if (params.asc_getRights() !== Asc.c_oRights.Edit)
+             permissions.edit = false;
+         this.review = (permissions.review === undefined) ? (permissions.edit !== false) : permissions.review;
+-        this.canAnalytics = params.asc_getIsAnalyticsEnable();
+         this.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+         this.isLightVersion = params.asc_getIsLight();
+         this.buildVersion = params.asc_getBuildVersion();
+-- 
+2.39.5 (Apple Git-154)
+
