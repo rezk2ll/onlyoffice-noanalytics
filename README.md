@@ -59,6 +59,36 @@ docker build -t onlyoffice-noanalytics:9.4.0-noanalytics dist/
 docker run -d -p 80:80 onlyoffice-noanalytics:9.4.0-noanalytics   # http://localhost/
 ```
 
+## Continuous integration
+
+GitHub Actions (`.github/workflows/`) build and publish the image to Harbor.
+
+| Trigger | Result |
+|---------|--------|
+| Pull request | Builds the image to validate it. Does not push. |
+| Push to `main` | Publishes `<project>/onlyoffice-noanalytics:latest`. |
+| Push a `vX.Y.Z` tag | Publishes a versioned image and creates a GitHub release. |
+
+The publish workflows log in to Harbor using four repository secrets, which must
+be set before the first publish: `HARBOR_REGISTRY`, `HARBOR_USER`,
+`HARBOR_PASSWORD`, and `HARBOR_PROJECT`. The pushed repository is
+`$HARBOR_REGISTRY/$HARBOR_PROJECT/onlyoffice-noanalytics`.
+
+### Releasing a new version
+
+The image tag is taken from the git tag with the leading `v` stripped, so tag
+`v9.4.0-noanalytics` publishes `.../onlyoffice-noanalytics:9.4.0-noanalytics`.
+
+```bash
+git checkout main && git pull
+git tag v9.4.0-noanalytics
+git push origin v9.4.0-noanalytics
+```
+
+The tag must match `v[0-9]+.[0-9]+.[0-9]+*`. Pushing it runs the release
+workflow, which builds the multi-arch image, pushes the versioned tag to Harbor,
+and opens a GitHub release with generated notes.
+
 ## Verification (already done on a local arm64 build)
 
 - `healthcheck` returns `true`.
@@ -76,5 +106,6 @@ docker run -d -p 80:80 onlyoffice-noanalytics:9.4.0-noanalytics   # http://local
 | `build-webapps.sh` | Clone + patch + grunt build → `dist/apps/` |
 | `dist/Dockerfile` | Overlay `apps/` onto `onlyoffice/documentserver:9.4.0` |
 | `dist/push-multiarch.sh` | Build + push multi-arch image (set `IMAGE`) |
+| `.github/workflows/` | CI: build on PR, publish `latest` on `main`, publish a version on a `v*` tag |
 
 `web-apps/`, `dist/apps/`, and `node_modules/` are generated and git-ignored.
