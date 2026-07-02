@@ -67,17 +67,21 @@ build_arch linux/amd64 amd64; push_converge "${REPO}:${TAG}-amd64"
 build_arch linux/arm64 arm64; push_converge "${REPO}:${TAG}-arm64"
 
 echo "### combine -> ${IMAGE}"
+combined=0
 for i in $(seq 1 10); do
-  docker buildx imagetools create -t "$IMAGE" "${REPO}:${TAG}-amd64" "${REPO}:${TAG}-arm64" && break
+  docker buildx imagetools create -t "$IMAGE" "${REPO}:${TAG}-amd64" "${REPO}:${TAG}-arm64" && { combined=1; break; }
   sleep 1
 done
+# If the manifest was never created, leave the per-arch tags in place (they are
+# the only handle on the pushed layers) and fail loudly instead of untagging them.
+[ "$combined" = 1 ] || { echo "FAILED to create multi-arch manifest ${IMAGE}; per-arch tags kept." >&2; exit 1; }
 
 # Drop the per-arch helper tags — Harbor keeps the underlying manifests, which
-# the multi-arch index still references. Best-effort, Harbor-only.
+# the multi-arch index still references. Best-effort, Harbor-only; must never
+# fail the run (auth may live in a credential store, leaving no inline `auth`).
 HOST="${REPO%%/*}"
-if command -v curl >/dev/null 2>&1 && \
-   python3 -c "import json,sys;sys.exit(0 if '$HOST' in json.load(open('$HOME/.docker/config.json')).get('auths',{}) else 1)" 2>/dev/null; then
-  AUTH=$(python3 -c "import json;print(json.load(open('$HOME/.docker/config.json'))['auths']['$HOST']['auth'])")
+AUTH="$(python3 -c "import json;print(json.load(open('$HOME/.docker/config.json')).get('auths',{}).get('$HOST',{}).get('auth',''))" 2>/dev/null || true)"
+if [ -n "$AUTH" ] && command -v curl >/dev/null 2>&1; then
   PR="${REPO#*/}"; PROJ="${PR%%/*}"; RNAME="${PR#*/}"
   for s in amd64 arm64; do
     curl -s -o /dev/null -w "untag ${TAG}-${s} -> HTTP %{http_code}\n" \
