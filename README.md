@@ -1,57 +1,73 @@
-# OnlyOffice DocumentServer 9.4.0 — analytics removed
+# OnlyOffice DocumentServer images for Twake
 
-A custom build of the latest stable **OnlyOffice DocumentServer (`9.4.0`)** with the
-Google Analytics tracking removed from the editors, by applying upstream web-apps
-commit
-[`48dcc5c`](https://github.com/ONLYOFFICE/web-apps/commit/48dcc5c22c8463a39c5368fcb3c55da793a915a9)
-*("[all] removed Analytic module sources")*.
+Custom multi-arch builds of **OnlyOffice DocumentServer 9.4.0** (build `9.4.0-129`),
+published to Harbor under the `twake-workplace` project. Two independent overlays on
+the official `onlyoffice/documentserver` image, composed into the shipped images:
 
-That commit landed on **2026-05-22**, three days *after* the `9.4.0` release
-(2026-05-19), so it is **not** in the stock image — hence this overlay build.
+- **analytics-free**: Google Analytics tracking removed from the editors.
+- **Scribe**: the Scribe editor addon (patched `sdkjs` + plugin).
+
+| Image (tag) | Base | Analytics | Scribe |
+|-------------|------|-----------|--------|
+| `onlyoffice-noanalytics:9.4.0-noanalytics` | official 9.4.0 | removed | no |
+| `onlyoffice:9.4.0-noanalytics-scribe-<build>` | analytics-free | removed | yes |
+| `onlyoffice:9.4.0.1-scribe-<build>` | official 9.4.0.1 | stock | yes |
+
+Every image is `linux/amd64` + `linux/arm64`. The `9.4.0` and `9.4.0.1` tags are the
+same OnlyOffice build (`9.4.0-129`).
 
 ## How it works
 
-The official `onlyoffice/documentserver` image installs a prebuilt `.deb`, with the
-editors deployed at `/var/www/onlyoffice/documentserver/web-apps/`. Instead of a
-multi-hour full source build, this **overlays a patched web-apps build** onto the
-official image:
+The official image installs a prebuilt `.deb` with the editors deployed under
+`/var/www/onlyoffice/documentserver/`. Rather than a multi-hour source build, each
+customization is a thin **overlay** layered onto that image:
 
-1. **Patch** — `web-apps` pinned at the `9.4.0` base commit `1993a6d8`, with
-   `analytics-removal.patch` applied (the upstream commit, regenerated to apply
-   cleanly: 65 files, 4 insertions / 700 deletions).
-2. **Build** — the 5 main editors (`document/spreadsheet/presentation/pdf/visio`)
-   rebuilt via grunt inside a `node:20` container, producing analytics-free
-   `code.js` bundles. `sdkjs`/`core` are unchanged and reused from the base image.
-3. **Overlay** — `dist/Dockerfile`: `FROM onlyoffice/documentserver:9.4.0` +
-   `COPY apps/ …/web-apps/apps/`. The overlay is pure JS/HTML, so it is
-   architecture-independent → clean multi-arch (amd64 + arm64) with no emulation.
+- **analytics-free** (`dist/`): the 5 main desktop editors
+  (`document/spreadsheet/presentation/pdf/visio`) rebuilt from `web-apps` `9.4.0`
+  (base commit `1993a6d8`) with `analytics-removal.patch` applied (upstream commit
+  [`48dcc5c`](https://github.com/ONLYOFFICE/web-apps/commit/48dcc5c22c8463a39c5368fcb3c55da793a915a9),
+  "removed Analytic module sources"), replacing the stock `apps/`. That commit
+  landed three days after the 9.4.0 release, so it is not in the stock image. The
+  overlay is pure JS/HTML, so it is architecture-independent (clean multi-arch, no
+  emulation).
+- **Scribe** (`scribe/`): a patched `sdk-all.js` plus the `sdkjs-plugins/scribe`
+  addon, layered onto either the analytics-free image or stock 9.4.0.1. The patch
+  and plugin are version-locked to build `9.4.0-129` (a build guard enforces it).
 
-### Scope
+### Analytics scope
 
-The **5 main desktop editors** — where the Google Analytics module
-(`UA-12442749-13`) and `trackEvent()` calls actually ran — are fully cleaned
-(verified: 0 occurrences in the served bundles). The **mobile** and **embed**
-editors are not rebuilt; they retain stock 9.4.0 behaviour. (Their analytics path
-was already inert: the embed `Common.Analytics` object is never defined and
-`initialize` is commented out.)
+The 5 main desktop editors, where the GA module (`UA-12442749-13`) and
+`trackEvent()` calls actually ran, are fully cleaned (0 occurrences in the served
+bundles). The mobile and embed editors keep stock 9.4.0 behaviour; their analytics
+path was already inert (the embed `Common.Analytics` object is never defined).
 
-## Build & push (the part to finish on Harbor)
+## Building
+
+### Analytics-free image
 
 ```bash
-# 1. Rebuild the patched editor bundles into dist/apps/ (run natively, not emulated)
-./build-webapps.sh
-
-# 2. Log in to the target registry and push a multi-arch image
-docker login harbor.example.com
-IMAGE=harbor.example.com/onlyoffice/onlyoffice-noanalytics:9.4.0-noanalytics \
+./build-webapps.sh                       # rebuild GA-free editor bundles -> dist/apps/
+docker login harbor.linagora.com
+IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalytics \
   dist/push-multiarch.sh
 ```
 
-`dist/push-multiarch.sh` works with any registry (Harbor, GHCR, Docker Hub) — set
-`IMAGE` accordingly. It creates a `docker-container` buildx builder if needed and
-pushes a multi-arch manifest.
+### Scribe variants
 
-### Single-arch / local only
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install arm64   # arm64 emulation, once
+
+IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-06-29.14 \
+BASE_IMAGE=onlyoffice/documentserver:9.4.0.1 \
+  scribe/build-scribe.sh
+```
+
+See **[`scribe/README.md`](scribe/README.md)** for both variants and options, and
+**[`dist/README.md`](dist/README.md)** for the multi-arch push engine, including how
+it survives Harbor resetting large blob uploads (build per arch, push with
+retry-until-converge, then stitch into one manifest).
+
+### Local single-arch
 
 ```bash
 ./build-webapps.sh
@@ -61,7 +77,8 @@ docker run -d -p 80:80 onlyoffice-noanalytics:9.4.0-noanalytics   # http://local
 
 ## Continuous integration
 
-GitHub Actions (`.github/workflows/`) build and publish the image to Harbor.
+GitHub Actions build and publish the **analytics-free** image to Harbor. The Scribe
+variants are built manually via `scribe/build-scribe.sh`.
 
 | Trigger | Result |
 |---------|--------|
@@ -69,15 +86,14 @@ GitHub Actions (`.github/workflows/`) build and publish the image to Harbor.
 | Push to `main` | Publishes `<project>/onlyoffice-noanalytics:latest`. |
 | Push a `vX.Y.Z` tag | Publishes a versioned image and creates a GitHub release. |
 
-The publish workflows log in to Harbor using four repository secrets, which must
-be set before the first publish: `HARBOR_REGISTRY`, `HARBOR_USER`,
-`HARBOR_PASSWORD`, and `HARBOR_PROJECT`. The pushed repository is
+Set four repository secrets before the first publish: `HARBOR_REGISTRY`,
+`HARBOR_USER`, `HARBOR_PASSWORD`, `HARBOR_PROJECT`. The pushed repository is
 `$HARBOR_REGISTRY/$HARBOR_PROJECT/onlyoffice-noanalytics`.
 
 ### Releasing a new version
 
-The image tag is taken from the git tag with the leading `v` stripped, so tag
-`v9.4.0-noanalytics` publishes `.../onlyoffice-noanalytics:9.4.0-noanalytics`.
+The image tag is the git tag with the leading `v` stripped, so `v9.4.0-noanalytics`
+publishes `.../onlyoffice-noanalytics:9.4.0-noanalytics`.
 
 ```bash
 git checkout main && git pull
@@ -85,27 +101,29 @@ git tag v9.4.0-noanalytics
 git push origin v9.4.0-noanalytics
 ```
 
-The tag must match `v[0-9]+.[0-9]+.[0-9]+*`. Pushing it runs the release
-workflow, which builds the multi-arch image, pushes the versioned tag to Harbor,
-and opens a GitHub release with generated notes.
+The tag must match `v[0-9]+.[0-9]+.[0-9]+*`; pushing it builds the multi-arch image,
+pushes the versioned tag to Harbor, and opens a GitHub release with generated notes.
 
-## Verification (already done on a local arm64 build)
+## Verification
 
-- `healthcheck` returns `true`.
-- All 5 served `code.js` bundles: full size, `trackEvent` / `component.Analytics` /
-  `UA-12442749` = **0**, valid JS syntax. (Stock base had: doc=8, sheet=33,
-  slide=35, pdf=25.)
-- The Document Editor boots fully in a browser (toolbar, menus, panels) with no
+Checked on served builds:
+
+- `healthcheck` returns `true`; the Document Editor boots in a browser with no
   console errors.
+- Analytics-free editors: `trackEvent` / `component.Analytics` / `UA-12442749` = **0**
+  in all 5 served `code.js` bundles (stock base had doc=8, sheet=33, slide=35, pdf=25).
+- Scribe images: `sdk-all.js` carries the patch (`GetInlineDrawings`), the plugin is
+  served, and the editor analytics match the base (0 on the analytics-free base,
+  stock on 9.4.0.1).
 
 ## Repo layout
 
 | Path | Purpose |
 |------|---------|
-| `analytics-removal.patch` | The analytics removal, applies onto web-apps `9.4.0` base `1993a6d8` |
-| `build-webapps.sh` | Clone + patch + grunt build → `dist/apps/` |
-| `dist/Dockerfile` | Overlay `apps/` onto `onlyoffice/documentserver:9.4.0` |
-| `dist/push-multiarch.sh` | Build + push multi-arch image (set `IMAGE`) |
+| `analytics-removal.patch` | GA removal, applies onto web-apps `9.4.0` base `1993a6d8` |
+| `build-webapps.sh` | Clone + patch + grunt build -> `dist/apps/` |
+| `dist/` | Analytics-free overlay (`Dockerfile`) + multi-arch push engine (`push-multiarch.sh`); see `dist/README.md` |
+| `scribe/` | Scribe overlay (`Dockerfile`, `build-scribe.sh`); see `scribe/README.md` |
 | `.github/workflows/` | CI: build on PR, publish `latest` on `main`, publish a version on a `v*` tag |
 
 `web-apps/`, `dist/apps/`, and `node_modules/` are generated and git-ignored.
