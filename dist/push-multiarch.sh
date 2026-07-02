@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
-# Build and push a multi-arch (amd64 + arm64) OnlyOffice image to a registry
-# (Harbor, GHCR, Docker Hub, ...).
+# Build a multi-arch (amd64 + arm64) OnlyOffice image and push it to a registry
+# using regctl chunked blob uploads.
 #
 # By default it builds the analytics-free overlay (dist/Dockerfile + dist/apps/).
 # It is also the shared build/push engine for the Scribe overlay — set CONTEXT,
 # BASE_IMAGE and EXPECT_OO_VERSION to point it at another context (see
 # ../scribe/build-scribe.sh).
 #
-# Why not a plain `buildx --push`: harbor.linagora.com resets large blob uploads
-# ("connection reset by peer" / HTTP 499) on the base-image layers, which kills a
-# one-shot multi-platform push. Instead we build each arch to a per-arch tag,
-# `docker push` it with retry-until-converge (each retry skips already-uploaded
-# layers, so an intermittent reset just costs one more attempt), then stitch the
-# two into one manifest and drop the per-arch helper tags.
+# Why regctl chunked instead of `buildx --push` / `docker push`: harbor.linagora.com
+# sits behind a proxy that times out (504) on a single large blob upload, so pushing
+# the ~1GB base layer in one request never completes from a CI or slow network.
+# regctl uploads each blob in small PATCH chunks (default 16MB), each a short request
+# well under the proxy timeout, and resumes from the last offset on failure. It also
+# pushes the multi-arch index directly, so there is no per-arch tag to clean up.
 #
 # Prerequisites:
 #   - default (analytics-free) context: dist/apps/ must exist (run ../build-webapps.sh)
-#   - docker login <registry>   (push rights to the target repo)
+#   - docker login <registry>   (the credentials are reused for regctl)
 #   - arm64 emulation if the Dockerfile has per-arch RUN steps (the Scribe guard does):
 #       docker run --privileged --rm tonistiigi/binfmt --install arm64
 #
 # Usage:
-#   IMAGE=harbor.example.com/twake-workplace/onlyoffice:9.4.0-noanalytics \
+#   IMAGE=harbor.example.com/twake-workplace/onlyoffice-noanalytics:latest \
 #     dist/push-multiarch.sh
 #
 #   # generic (used by the Scribe build):
@@ -29,66 +29,71 @@
 #     dist/push-multiarch.sh
 set -euo pipefail
 
-IMAGE="${IMAGE:?Set IMAGE, e.g. harbor.example.com/twake-workplace/onlyoffice:9.4.0-noanalytics}"
+IMAGE="${IMAGE:?Set IMAGE, e.g. harbor.example.com/twake-workplace/onlyoffice-noanalytics:latest}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-CTX="${CONTEXT:-$HERE}"                 # default: dist/ (analytics-free overlay)
-REPO="${IMAGE%:*}"; TAG="${IMAGE##*:}"
+CTX="${CONTEXT:-$HERE}"                    # default: dist/ (analytics-free overlay)
+REGISTRY="${IMAGE%%/*}"
+TAG="${IMAGE##*:}"
+PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
+BLOB_CHUNK="${BLOB_CHUNK:-16000000}"       # 16MB PATCH chunks: short requests, under proxy timeouts
+REGCTL_VERSION="${REGCTL_VERSION:-v0.11.5}"
 
 if [ "$CTX" = "$HERE" ] && [ ! -d "$HERE/apps" ]; then
   echo "dist/apps/ missing — run ./build-webapps.sh first." >&2
   exit 1
 fi
 
-BUILD_ARGS=()
-[ -n "${BASE_IMAGE:-}" ]         && BUILD_ARGS+=(--build-arg "BASE_IMAGE=${BASE_IMAGE}")
-[ -n "${EXPECT_OO_VERSION:-}" ]  && BUILD_ARGS+=(--build-arg "EXPECT_OO_VERSION=${EXPECT_OO_VERSION}")
+# --- regctl (download a pinned static binary if not already on PATH) ---------
+regctl="$(command -v regctl || true)"
+if [ -z "$regctl" ]; then
+  case "$(uname -m)" in
+    x86_64) rarch=amd64 ;;
+    aarch64|arm64) rarch=arm64 ;;
+    *) echo "unsupported host arch $(uname -m) for regctl" >&2; exit 1 ;;
+  esac
+  cache="${XDG_CACHE_HOME:-$HOME/.cache}/regctl-${REGCTL_VERSION}"
+  regctl="${cache}/regctl"
+  if [ ! -x "$regctl" ]; then
+    mkdir -p "$cache"
+    # Download to a temp path first so an interrupted download can't leave a
+    # broken (but executable) binary that the next run would reuse.
+    curl -fsSL "https://github.com/regclient/regclient/releases/download/${REGCTL_VERSION}/regctl-linux-${rarch}" -o "${regctl}.tmp"
+    chmod +x "${regctl}.tmp"
+    mv "${regctl}.tmp" "$regctl"
+  fi
+fi
 
-# A docker-container builder is required to emit a multi-platform manifest.
+# --- reuse the docker login credentials for regctl, then enable chunking -----
+# regctl needs the credential on its own host entry (a bare `registry set` would
+# otherwise shadow the docker-config credential), so log in first, then set chunks.
+cfg="${DOCKER_CONFIG:-$HOME/.docker}/config.json"
+user="$(python3 -c "import json,base64;a=json.load(open('$cfg'))['auths']['$REGISTRY']['auth'];print(base64.b64decode(a).decode().split(':',1)[0])" 2>/dev/null || true)"
+if [ -n "$user" ]; then
+  # --skip-check: don't let a transient registry ping abort the run; the image
+  # copy below performs (and retries) the real authentication.
+  python3 -c "import json,base64;a=json.load(open('$cfg'))['auths']['$REGISTRY']['auth'];import sys;sys.stdout.write(base64.b64decode(a).decode().split(':',1)[1])" \
+    | "$regctl" registry login "$REGISTRY" -u "$user" --pass-stdin --skip-check >/dev/null
+else
+  echo "warning: no inline credentials for $REGISTRY in $cfg; assuming regctl is already authenticated." >&2
+fi
+"$regctl" registry set "$REGISTRY" --blob-max "$BLOB_CHUNK" --blob-chunk "$BLOB_CHUNK" >/dev/null
+
+# --- build a multi-arch OCI layout, then push it chunked ---------------------
+BUILD_ARGS=()
+[ -n "${BASE_IMAGE:-}" ]        && BUILD_ARGS+=(--build-arg "BASE_IMAGE=${BASE_IMAGE}")
+[ -n "${EXPECT_OO_VERSION:-}" ] && BUILD_ARGS+=(--build-arg "EXPECT_OO_VERSION=${EXPECT_OO_VERSION}")
+
 docker buildx inspect oo-builder >/dev/null 2>&1 || \
   docker buildx create --name oo-builder --driver docker-container --bootstrap >/dev/null
 
-build_arch() { # platform arch
-  echo "### build $2 ($1)"
-  docker buildx build --builder oo-builder --platform "$1" \
-    "${BUILD_ARGS[@]}" --tag "${REPO}:${TAG}-$2" --load "$CTX"
-}
+work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
+echo "### build ${PLATFORMS} -> OCI layout"
+docker buildx build --builder oo-builder --platform "$PLATFORMS" \
+  "${BUILD_ARGS[@]}" --output "type=oci,dest=${work}/oci,tar=false,name=${IMAGE}" "$CTX"
 
-push_converge() { # image
-  local img="$1" i
-  for i in $(seq 1 15); do
-    echo "--- push $img (attempt $i) ---"
-    docker push "$img" 2>&1 | grep -vE 'Waiting|Preparing|Layer already exists' | tail -4 || true
-    docker manifest inspect "$img" >/dev/null 2>&1 && { echo ">>> pushed $img"; return 0; }
-  done
-  echo "FAILED to push $img" >&2; return 1
-}
-
-build_arch linux/amd64 amd64; push_converge "${REPO}:${TAG}-amd64"
-build_arch linux/arm64 arm64; push_converge "${REPO}:${TAG}-arm64"
-
-echo "### combine -> ${IMAGE}"
-combined=0
-for i in $(seq 1 10); do
-  docker buildx imagetools create -t "$IMAGE" "${REPO}:${TAG}-amd64" "${REPO}:${TAG}-arm64" && { combined=1; break; }
-  sleep 1
-done
-# If the manifest was never created, leave the per-arch tags in place (they are
-# the only handle on the pushed layers) and fail loudly instead of untagging them.
-[ "$combined" = 1 ] || { echo "FAILED to create multi-arch manifest ${IMAGE}; per-arch tags kept." >&2; exit 1; }
-
-# Drop the per-arch helper tags — Harbor keeps the underlying manifests, which
-# the multi-arch index still references. Best-effort, Harbor-only; must never
-# fail the run (auth may live in a credential store, leaving no inline `auth`).
-HOST="${REPO%%/*}"
-AUTH="$(python3 -c "import json;print(json.load(open('$HOME/.docker/config.json')).get('auths',{}).get('$HOST',{}).get('auth',''))" 2>/dev/null || true)"
-if [ -n "$AUTH" ] && command -v curl >/dev/null 2>&1; then
-  PR="${REPO#*/}"; PROJ="${PR%%/*}"; RNAME="${PR#*/}"
-  for s in amd64 arm64; do
-    curl -s -o /dev/null -w "untag ${TAG}-${s} -> HTTP %{http_code}\n" \
-      -X DELETE -H "Authorization: Basic $AUTH" \
-      "https://${HOST}/api/v2.0/projects/${PROJ}/repositories/${RNAME}/artifacts/${TAG}-${s}/tags/${TAG}-${s}" || true
-  done
-fi
+echo "### push chunked (${BLOB_CHUNK}B) -> ${IMAGE}"
+"$regctl" image copy "ocidir://${work}/oci:${TAG}" "$IMAGE"
 
 echo "Pushed multi-arch image: $IMAGE"
-docker buildx imagetools inspect "$IMAGE" | grep -E 'Platform:' | grep -v unknown
+# Confirmation only; a flaky registry read here must not fail an already-good push.
+docker buildx imagetools inspect "$IMAGE" 2>/dev/null | grep -E 'Platform:' | grep -v unknown || true
