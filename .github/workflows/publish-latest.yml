@@ -18,9 +18,9 @@ jobs:
           password: ${{ secrets.HARBOR_PASSWORD }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Build and push to Harbor (multi-arch, retry-converge)
-        # Harbor resets large blob uploads, which kills a one-shot buildx --push.
-        # push-multiarch.sh builds each arch and pushes with retry-until-converge.
+      - name: Build and push to Harbor (multi-arch, chunked)
+        # Harbor's proxy times out (504) on a one-shot push of the ~1GB base layer.
+        # push-multiarch.sh uploads blobs in 16MB chunks via regctl, which gets past it.
         env:
           IMAGE: ${{ secrets.HARBOR_REGISTRY }}/${{ secrets.HARBOR_PROJECT }}/onlyoffice-noanalytics:latest
         run: ./dist/push-multiarch.sh

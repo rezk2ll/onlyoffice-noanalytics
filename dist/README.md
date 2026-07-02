@@ -4,22 +4,23 @@
 and publishes it as one multi-arch tag. It builds the analytics-free overlay by
 default, and doubles as the shared push engine for the [Scribe build](../scribe/).
 
-## Why not a one-shot `buildx --push`
+## Why chunked uploads
 
-`harbor.linagora.com` resets large blob uploads (`connection reset by peer` /
-HTTP 499) on the base-image layers, which kills a one-shot multi-platform push
-partway through. The resets are intermittent, not a hard limit, so the script:
+`harbor.linagora.com` sits behind a proxy that times out (`504 Gateway Timeout`,
+then `499`) on a single large blob upload. The base image has a ~1GB layer, and
+pushing it in one request never finishes from a CI or otherwise slow network, so a
+one-shot `buildx --push` (or plain `docker push`) fails partway through and retrying
+just restarts the same doomed upload.
 
-1. builds each arch to a per-arch tag (`:<tag>-amd64`, `:<tag>-arm64`) and
-   `docker push`es it, **retrying until it converges** — each retry skips the
-   layers already uploaded, so a reset just costs one more attempt;
-2. stitches the two into one manifest with `docker buildx imagetools create`
-   (manifests only, layers already present);
-3. drops the per-arch helper tags via the Harbor API (the multi-arch index still
-   references the underlying manifests).
+The script instead builds a multi-arch OCI layout and pushes it with
+[`regctl`](https://github.com/regclient/regclient), configured to upload each blob
+in small `PATCH` chunks (16MB by default). Every chunk is a short request well under
+the proxy timeout, and regctl resumes from the last offset on failure. Because
+regctl pushes the multi-arch index directly, there are no per-arch helper tags to
+create or clean up.
 
-Registries that accept the large concurrent upload work too — the retry loop
-simply converges on the first attempt.
+`regctl` is downloaded (a pinned static binary) if it is not already on `PATH`, and
+it reuses the `docker login` credentials, so no extra setup is needed.
 
 ## Usage
 
@@ -27,7 +28,7 @@ simply converges on the first attempt.
 docker login harbor.linagora.com
 
 # analytics-free overlay (context = dist/, needs dist/apps from ../build-webapps.sh)
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics \
+IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:latest \
   dist/push-multiarch.sh
 ```
 
@@ -39,6 +40,8 @@ Environment:
 | `CONTEXT` | build context dir (default `dist/`) |
 | `BASE_IMAGE` | passed as `--build-arg BASE_IMAGE` when the Dockerfile takes one |
 | `EXPECT_OO_VERSION` | passed as `--build-arg EXPECT_OO_VERSION` (version guard) |
+| `PLATFORMS` | platforms to build (default `linux/amd64,linux/arm64`) |
+| `BLOB_CHUNK` | chunk size in bytes (default `16000000`) |
 
 ## arm64 emulation
 
