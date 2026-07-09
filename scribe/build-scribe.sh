@@ -39,10 +39,11 @@ CTX="$WORK/ctx"; mkdir -p "$CTX"
 
 # 1. Patched sdk-all.js — compiled from the sdkjs source branch, not a prebuilt
 #    tarball. Clone the ref, build the word bundle in Docker via the vendored
-#    scribe/sdkjs.Dockerfile.build (so the source repo needs no Dockerfile of its
-#    own), extract the emitted sdk-all.js, and verify both patched methods are
-#    present before baking. The bundle is plain JS (architecture-independent), so
-#    one build feeds both arches downstream.
+#    scribe/sdkjs.Dockerfile.build (which also merges the sdkjs-forms addon, so the
+#    source repo needs no Dockerfile of its own), extract the emitted sdk-all.js,
+#    and verify the patched methods AND the forms addon are present before baking.
+#    The bundle is plain JS (architecture-independent), so one build feeds both
+#    arches downstream.
 git clone --depth 1 --branch "$SDKJS_REF" "$SDKJS_REPO" "$WORK/sdkjs" >/dev/null 2>&1 \
   || { echo "clone of $SDKJS_REPO#$SDKJS_REF failed — is the branch pushed?" >&2; exit 1; }
 SDKJS_TAG="scribe-sdkjs-build:$(printf '%s' "$SDKJS_REF" | tr -c 'A-Za-z0-9._-' '-')"
@@ -53,7 +54,11 @@ docker cp "$cid:/sdkjs/deploy/sdkjs/word/sdk-all.js" "$CTX/sdk-all.js"
 docker rm -v "$cid" >/dev/null
 grep -q GetInlineDrawings "$CTX/sdk-all.js"    || { echo "sdk-all.js missing the patch (GetInlineDrawings)" >&2; exit 1; }
 grep -q GetSelectionScreenRect "$CTX/sdk-all.js" || { echo "sdk-all.js missing the patch (GetSelectionScreenRect)" >&2; exit 1; }
-echo "sdk-all.js OK ($(wc -c <"$CTX/sdk-all.js") bytes, both patches present)"
+# The sdkjs-forms addon must be merged in (Word forms API). A silent --addon
+# resolution failure leaves AscOForm at 3 instead of ~69, with no build error.
+forms_n="$(grep -c AscOForm "$CTX/sdk-all.js" || true)"
+[ "${forms_n:-0}" -ge 60 ] || { echo "sdk-all.js missing the sdkjs-forms addon (AscOForm=${forms_n}, expected ~69)" >&2; exit 1; }
+echo "sdk-all.js OK ($(wc -c <"$CTX/sdk-all.js") bytes; patches + forms present, AscOForm=${forms_n})"
 
 # 2. Scribe plugin at the pinned ref -> $CTX/scribe (drop stale pre-gzipped assets).
 git clone --depth 1 --branch "$SCRIBE_REF" --filter=blob:none --sparse "$SCRIBE_REPO" "$WORK/repo" >/dev/null 2>&1
