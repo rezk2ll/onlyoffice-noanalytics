@@ -65,7 +65,9 @@ BASE_IMAGE=onlyoffice/documentserver:9.4.0.1 \
 See **[`scribe/README.md`](scribe/README.md)** for both variants and options, and
 **[`dist/README.md`](dist/README.md)** for the multi-arch push engine, including how
 it survives Harbor resetting large blob uploads (build per arch, push with
-retry-until-converge, then stitch into one manifest).
+retry-until-converge, then stitch into one manifest). For a full from-scratch
+runbook of the analytics-free + Scribe variant, see
+**[`docs/build-noanalytics-scribe.md`](docs/build-noanalytics-scribe.md)**.
 
 ### Local single-arch
 
