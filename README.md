@@ -57,7 +57,7 @@ IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalyti
 ```bash
 docker run --privileged --rm tonistiigi/binfmt --install arm64   # arm64 emulation, once
 
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-06-29.14 \
+IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-07-09.1 \
 BASE_IMAGE=onlyoffice/documentserver:9.4.0.1 \
   scribe/build-scribe.sh
 ```

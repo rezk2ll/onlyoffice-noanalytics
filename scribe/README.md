@@ -2,12 +2,18 @@
 
 Layers the Scribe editor addon onto an OnlyOffice base image:
 
-- a patched sdkjs word bundle (`sdk-all.js` with `ApiRun.GetInlineDrawings`), and
-- the Scribe plugin (`sdkjs-plugins/scribe`),
+- a patched sdkjs word bundle (`sdk-all.js` with `ApiRun.GetInlineDrawings` and
+  `Api.GetSelectionScreenRect`), compiled from
+  [Benibur/sdkjs](https://github.com/Benibur/sdkjs) (branch
+  `integration/scribe-oo-9.4.0.129`), and
+- the Scribe plugin (`sdkjs-plugins/scribe`), from
+  [Benibur/cozy-drive](https://github.com/Benibur/cozy-drive).
 
-both from [Benibur/cozy-drive](https://github.com/Benibur/cozy-drive). The overlay
-Dockerfile is `Dockerfile`; `build-scribe.sh` assembles the context and hands off
-to [`../dist/push-multiarch.sh`](../dist/) to build and push multi-arch.
+`build-scribe.sh` clones the sdkjs source branch, builds `sdk-all.js` from it (via
+the vendored `sdkjs.Dockerfile.build`, a pure-Python `build/build.py` run — no
+npm/JRE), assembles the overlay context with the plugin, and hands off to
+[`../dist/push-multiarch.sh`](../dist/) to build and push multi-arch. The overlay
+Dockerfile is `Dockerfile`.
 
 ## Version lock
 
@@ -27,12 +33,12 @@ docker run --privileged --rm tonistiigi/binfmt --install arm64
 docker login harbor.linagora.com
 
 # Scribe on the analytics-free base (GA removed + Scribe):
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics-scribe-2026-06-29.14 \
+IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics-scribe-2026-07-09.1 \
 BASE_IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics \
   scribe/build-scribe.sh
 
 # Scribe on stock OnlyOffice 9.4.0.1:
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-06-29.14 \
+IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-07-09.1 \
 BASE_IMAGE=onlyoffice/documentserver:9.4.0.1 \
   scribe/build-scribe.sh
 ```
@@ -43,11 +49,13 @@ Environment:
 |-----|---------|---------|
 | `IMAGE` | (required) | target `repo:tag` |
 | `BASE_IMAGE` | (required) | foundation image (build `9.4.0-129`) |
-| `SCRIBE_REF` | `scribe-2026-06-29.14` | plugin git tag (equals its `SCRIBE_BUILD`) |
-| `SDK_URL` | 9.4.0.129 patch release | patched `sdk-all.js` tarball |
+| `SCRIBE_REF` | `scribe-2026-07-09.1` | plugin git tag (equals its `SCRIBE_BUILD`) |
+| `SCRIBE_REPO` | `Benibur/cozy-drive` | plugin source repo |
+| `SDKJS_REF` | `integration/scribe-oo-9.4.0.129` | patched sdkjs source branch |
+| `SDKJS_REPO` | `Benibur/sdkjs` | repo holding the patched sdkjs source |
 | `EXPECT_OO_VERSION` | `9.4.0-129` | version-guard value |
 
-`build-scribe.sh` verifies the patch is present in `sdk-all.js` before baking and
+`build-scribe.sh` verifies both patched methods are present in `sdk-all.js` before baking and
 stamps the plugin's `index.html` with `code.js?v=<SCRIBE_BUILD>` so browsers
 re-fetch on every plugin bump.
 

@@ -1,0 +1,24 @@
+# Build the patched Word sdk-all.js from a sdkjs source tree.
+#
+# Vendored here (rather than living in the sdkjs repo) so build-scribe.sh can point
+# SDKJS_REPO/SDKJS_REF at any compatible sdkjs source — e.g. Benibur/sdkjs — without
+# that repo needing to carry its own Dockerfile. The default source is
+# Benibur/sdkjs@integration/scribe-oo-9.4.0.129.
+#
+# build/build.py is a pure Python concatenation (no closure compiler, no npm/grunt,
+# so no JRE/node needed). Output lands at deploy/sdkjs/word/sdk-all.js and carries
+# our two apiBuilder.js methods (ApiRun.GetInlineDrawings, Api.GetSelectionScreenRect).
+#
+# build-scribe.sh passes the cloned sdkjs source as the build context and this file
+# via `-f`, extracts /sdkjs/deploy/sdkjs/word/sdk-all.js, and bakes it into the
+# Scribe overlay.
+FROM python:3-slim
+
+WORKDIR /sdkjs
+COPY . .
+
+# PRODUCT_VERSION/BUILD_NUMBER only stamp the license header; default is fine.
+ARG PRODUCT_VERSION=9.4.0
+ARG BUILD_NUMBER=129
+RUN PRODUCT_VERSION="$PRODUCT_VERSION" BUILD_NUMBER="$BUILD_NUMBER" \
+    python3 build/build.py --product word
