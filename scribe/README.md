@@ -37,16 +37,20 @@ docker run --privileged --rm tonistiigi/binfmt --install arm64
 
 ## Build
 
-```bash
-docker login harbor.linagora.com
+Publishing goes through CI, which holds the Harbor credentials: tag a release, or
+dispatch *Publish Scribe overlay to Harbor* from the Actions tab. See
+[`../docs/build-noanalytics-scribe.md`](../docs/build-noanalytics-scribe.md).
 
+Locally, to debug the build itself:
+
+```bash
 # Scribe on the analytics-free base (GA removed + Scribe):
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics-scribe-2026-07-09.1 \
-BASE_IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics \
+IMAGE=onlyoffice:local-scribe \
+BASE_IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:latest \
   scribe/build-scribe.sh
 
 # Scribe on stock OnlyOffice 9.4.0.1:
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-07-09.1 \
+IMAGE=onlyoffice:local-scribe-stock \
 BASE_IMAGE=onlyoffice/documentserver:9.4.0.1 \
   scribe/build-scribe.sh
 ```

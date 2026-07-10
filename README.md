@@ -41,23 +41,29 @@ The 5 main desktop editors, where the GA module (`UA-12442749-13`) and
 bundles). The mobile and embed editors keep stock 9.4.0 behaviour; their analytics
 path was already inert (the embed `Common.Analytics` object is never defined).
 
-## Building
+## Publishing
 
-### Analytics-free image
+CI holds the Harbor credentials and pushes every image. A release tag publishes the
+analytics-free base and then the Scribe overlay on top of it:
+
+```bash
+git tag v9.4.0.1 && git push origin v9.4.0.1   # -> onlyoffice-noanalytics:9.4.0.1
+                                               # -> onlyoffice:9.4.0.1-scribe
+```
+
+Merging to `main` republishes `onlyoffice-noanalytics:latest`. The Scribe overlay can
+also be rebuilt on its own from the Actions tab.
+
+## Building locally
+
+To debug a build. These produce local images; publishing goes through CI.
 
 ```bash
 ./build-webapps.sh                       # rebuild GA-free editor bundles -> dist/apps/
-docker login harbor.linagora.com
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalytics \
-  dist/push-multiarch.sh
-```
 
-### Scribe variants
-
-```bash
 docker run --privileged --rm tonistiigi/binfmt --install arm64   # arm64 emulation, once
 
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0.1-scribe-2026-07-09.1 \
+IMAGE=onlyoffice:local-scribe \
 BASE_IMAGE=onlyoffice/documentserver:9.4.0.1 \
   scribe/build-scribe.sh
 ```

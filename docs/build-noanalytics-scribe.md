@@ -1,100 +1,75 @@
 # Build the “analytics-free + Scribe” image
 
-Step-by-step runbook for producing the OnlyOffice DocumentServer image that is
-**both** analytics-free **and** carries the Scribe addon — written for someone who
-has never seen this repo.
+How the OnlyOffice DocumentServer image that is **both** analytics-free **and**
+carries the Scribe addon gets published, and how to reproduce it locally when you
+need to debug it.
 
-The variant is built in **two stages**: first the analytics-free image (the base),
-then the Scribe overlay layered on top of it. The sdkjs / forms / plugin sources are
-already pinned as defaults on this branch, so you only ever pass `IMAGE` and
-`BASE_IMAGE`.
+The variant is two images stacked: the analytics-free image (the base), then the
+Scribe overlay layered on top of it. The sdkjs / forms / plugin sources are pinned
+as defaults in `scribe/build-scribe.sh`, so nothing is passed by hand.
 
 | Result image | Base | Analytics | Scribe |
 |--------------|------|-----------|--------|
-| `onlyoffice:9.4.0-noanalytics-scribe-<build>` | analytics-free | removed | yes |
+| `onlyoffice:<version>-scribe` | analytics-free | removed | yes |
 
-## 0. Prerequisites (Linux host)
+## Publishing (this is the normal path)
 
-| Tool | Why |
-|------|-----|
-| **Docker** (with `buildx`) | every build runs in containers |
-| **git**, **curl**, **python3**, **bash** | cloning, downloading `regctl`, decoding credentials |
-| Network access to **GitHub** *and* **`harbor.linagora.com`** | the scripts clone sources and push the image |
-| **Harbor credentials** | to publish |
+CI builds and pushes both images. Nobody needs a Harbor account, and no image is
+ever built on a laptop for production.
 
-Two things to keep in mind:
-
-- **The analytics-free base must be pushed to a registry** before the Scribe stage:
-  the multi-arch Scribe build pulls its `BASE_IMAGE` from a registry, not from the
-  local Docker image store. Hence the order base → Scribe.
-- **`build-webapps.sh` must run natively** (it is a CPU-heavy grunt build) — do
-  **not** run it under QEMU emulation.
+**Cut a release.** Tagging publishes the base, then the overlay on top of it, and
+only creates the GitHub release once both are on Harbor:
 
 ```bash
-# Log in to Harbor (the credentials are reused by the push script)
-docker login harbor.linagora.com
+git tag v9.4.0.1 && git push origin v9.4.0.1
+```
 
-# Install arm64 emulation: needed for the multi-arch build AND for the Scribe
-# overlay's version guard (a RUN step that executes once per architecture)
+| Tag pushed | Images published |
+|------------|------------------|
+| `v9.4.0.1` | `onlyoffice-noanalytics:9.4.0.1`, then `onlyoffice:9.4.0.1-scribe` |
+
+**Or rebuild just the overlay.** The *Publish Scribe overlay to Harbor* workflow is
+dispatchable from the Actions tab. Give it the tag to publish (a date-stamped label
+such as `9.4.0-noanalytics-scribe-2026-07-09.1`) and the base tag to layer onto
+(defaults to `latest`, which `main` republishes on every merge). Use this when the
+overlay sources have moved but the base has not.
+
+> **Reproducibility caveat.** `SDKJS_REF` defaults to a *branch*
+> (`integration/scribe-oo-9.4.0.129`), not a tag, so two builds of the same git tag
+> can produce different images. Until it is pinned to a tag or a commit, the
+> date-stamped dispatch label is what actually distinguishes one overlay build from
+> another.
+
+## Building locally (debugging only)
+
+Only when you need to inspect the build itself. The result is not what gets
+deployed; publish via CI.
+
+```bash
+git clone https://github.com/linagora/onlyoffice-twake.git && cd onlyoffice-twake
+
+# arm64 emulation: the overlay's version guard is a RUN step, once per architecture
 docker run --privileged --rm tonistiigi/binfmt --install arm64
-```
 
-## 1. Get the repo and check out this branch
-
-```bash
-git clone https://github.com/linagora/onlyoffice-twake.git
-cd onlyoffice-twake
-git checkout feat/scribe-sdkjs-from-benibur
-
-# Confirm you are on it (the correct source defaults live here):
-git branch --show-current      # -> feat/scribe-sdkjs-from-benibur
-```
-
-On this branch the sources are already the defaults:
-
-- sdkjs: `Benibur/sdkjs@integration/scribe-oo-9.4.0.129`
-- forms addon: `ONLYOFFICE/sdkjs-forms@v9.4.0.129`
-- Scribe plugin: `scribe-2026-07-09.1` (`Benibur/cozy-drive`)
-
-You do **not** pass anything for these.
-
-## 2. Build and push the analytics-free image (the base)
-
-```bash
-# Rebuild the 5 editors with Google Analytics removed -> dist/apps/
-# (self-checks trackEvent=0; fails otherwise)
+# 1. Rebuild the 5 editors with Google Analytics removed -> dist/apps/
+#    (self-checks trackEvent=0; fails otherwise). Must run natively, not under QEMU.
 ./build-webapps.sh
 
-# Multi-arch (amd64+arm64) build + chunked push to Harbor
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalytics \
-  dist/push-multiarch.sh
-```
-
-## 3. Layer Scribe ON TOP of that base
-
-```bash
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics-scribe-2026-07-09.1 \
-BASE_IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalytics \
+# 2. Layer Scribe onto a base. Any published analytics-free tag works as BASE_IMAGE;
+#    the overlay build pulls it from the registry, not from the local image store.
+IMAGE=onlyoffice:local-scribe \
+BASE_IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:latest \
   scribe/build-scribe.sh
 ```
 
-`BASE_IMAGE` (the image from stage 2) is what makes the result analytics-free.
-`scribe/build-scribe.sh` layers on top of it, with no other parameter: `sdk-all.js`
-(Scribe patch + forms addon) compiled from Benibur/sdkjs, plus the Scribe plugin. It
-**fails** if the patch, the forms API (`AscOForm`), or the base build version are not
-as expected.
+`scribe/build-scribe.sh` compiles `sdk-all.js` (Scribe patch + forms addon) from
+`Benibur/sdkjs` and adds the Scribe plugin. It **fails** if the patch, the forms API
+(`AscOForm`), or the base build version are not as expected.
 
-**Published result:** `onlyoffice:9.4.0-noanalytics-scribe-2026-07-09.1` — analytics
-removed **and** Scribe.
-
-> The `2026-07-09.1` suffix is a free-form build label — use today's date
-> (`YYYY-MM-DD.n`) to trace each rebuild.
-
-## 4. Verify the produced image
+## Verify an image
 
 ```bash
-docker run --rm -p 8091:80 -e JWT_ENABLED=false \
-  harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics-scribe-2026-07-09.1
+docker run --rm -p 8091:80 -e JWT_ENABLED=false <image>
 
 # in another terminal:
 curl -s localhost:8091/healthcheck                                    # true
@@ -109,23 +84,6 @@ curl -s -o /dev/null -w "plugin %{http_code}\n" localhost:8091/sdkjs-plugins/scr
 
 All good when: `healthcheck=true`, `GetInlineDrawings=4`, `AscOForm=69`,
 `trackEvent=0` everywhere, plugin `200`.
-
-## Quick reference
-
-```bash
-git clone https://github.com/linagora/onlyoffice-twake.git && cd onlyoffice-twake
-git checkout feat/scribe-sdkjs-from-benibur
-docker login harbor.linagora.com
-docker run --privileged --rm tonistiigi/binfmt --install arm64
-
-./build-webapps.sh
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalytics \
-  dist/push-multiarch.sh
-
-IMAGE=harbor.linagora.com/twake-workplace/onlyoffice:9.4.0-noanalytics-scribe-2026-07-09.1 \
-BASE_IMAGE=harbor.linagora.com/twake-workplace/onlyoffice-noanalytics:9.4.0-noanalytics \
-  scribe/build-scribe.sh
-```
 
 ## See also
 
